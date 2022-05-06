@@ -3,10 +3,10 @@ package local
 import (
 	"fmt"
 
-	"github.com/mcdonaldseanp/regulator/language"
-	. "github.com/mcdonaldseanp/regulator/rgerror"
-	"github.com/mcdonaldseanp/regulator/utils"
-	. "github.com/mcdonaldseanp/regulator/validator"
+	"github.com/puppetlabs/regulator/language"
+	. "github.com/puppetlabs/regulator/rgerror"
+	"github.com/puppetlabs/regulator/utils"
+	. "github.com/puppetlabs/regulator/validator"
 )
 
 func RunAction(actn language.Action) language.ActionResult {

@@ -3,10 +3,10 @@ package remote
 import (
 	"fmt"
 
-	"github.com/mcdonaldseanp/regulator/connection"
-	. "github.com/mcdonaldseanp/regulator/rgerror"
-	"github.com/mcdonaldseanp/regulator/utils"
-	. "github.com/mcdonaldseanp/regulator/validator"
+	"github.com/puppetlabs/regulator/connection"
+	. "github.com/puppetlabs/regulator/rgerror"
+	"github.com/puppetlabs/regulator/utils"
+	. "github.com/puppetlabs/regulator/validator"
 )
 
 func React(raw_data []byte, username string, target string, port string) (string, *RGerror) {

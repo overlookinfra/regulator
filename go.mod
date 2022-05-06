@@ -1,4 +1,4 @@
-module github.com/mcdonaldseanp/regulator
+module github.com/puppetlabs/regulator
 
 go 1.16
 

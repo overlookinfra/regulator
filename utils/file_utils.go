@@ -3,11 +3,12 @@ package utils
 import (
 	"bufio"
 	"fmt"
-	. "github.com/mcdonaldseanp/regulator/rgerror"
-	. "github.com/mcdonaldseanp/regulator/validator"
 	"io"
 	"os"
 	"strings"
+
+	. "github.com/puppetlabs/regulator/rgerror"
+	. "github.com/puppetlabs/regulator/validator"
 )
 
 const STDIN_IDENTIFIER string = "__STDIN__"

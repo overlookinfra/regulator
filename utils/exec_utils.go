@@ -6,8 +6,8 @@ import (
 	"os"
 	"os/exec"
 
-	. "github.com/mcdonaldseanp/regulator/rgerror"
-	"github.com/mcdonaldseanp/regulator/sanitize"
+	. "github.com/puppetlabs/regulator/rgerror"
+	"github.com/puppetlabs/regulator/sanitize"
 )
 
 func ExecReadOutput(command_string string, params ...string) (string, string, *RGerror) {

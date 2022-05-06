@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/mcdonaldseanp/regulator/connection"
-	. "github.com/mcdonaldseanp/regulator/rgerror"
-	"github.com/mcdonaldseanp/regulator/utils"
-	"github.com/mcdonaldseanp/regulator/version"
+	"github.com/puppetlabs/regulator/connection"
+	. "github.com/puppetlabs/regulator/rgerror"
+	"github.com/puppetlabs/regulator/utils"
+	"github.com/puppetlabs/regulator/version"
 )
 
 func Setup(username string, target string, port string) (string, string, *RGerror) {
@@ -16,7 +16,7 @@ func Setup(username string, target string, port string) (string, string, *RGerro
 		`#!/usr/bin/env bash
 
 		mkdir -p $HOME/.regulator/bin 1>&2
-		curl -L https://github.com/mcdonaldseanp/regulator/releases/download/%s/regulator > $HOME/.regulator/bin/regulator
+		curl -L https://github.com/puppetlabs/regulator/releases/download/%s/regulator > $HOME/.regulator/bin/regulator
 		chmod 755 $HOME/.regulator/bin/regulator 1>&2`,
 		version.VERSION,
 	)

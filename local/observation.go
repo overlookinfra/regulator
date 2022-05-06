@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/mcdonaldseanp/regulator/language"
-	. "github.com/mcdonaldseanp/regulator/rgerror"
-	"github.com/mcdonaldseanp/regulator/utils"
+	"github.com/puppetlabs/regulator/language"
+	. "github.com/puppetlabs/regulator/rgerror"
+	"github.com/puppetlabs/regulator/utils"
 )
 
 func RunObservation(name string, obsv language.Observation, impls map[string]language.Implement) language.ObservationResult {

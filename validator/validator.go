@@ -2,9 +2,10 @@ package utils
 
 import (
 	"fmt"
-	. "github.com/mcdonaldseanp/regulator/rgerror"
 	"path/filepath"
 	"regexp"
+
+	. "github.com/puppetlabs/regulator/rgerror"
 )
 
 type ValidateType int

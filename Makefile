@@ -8,11 +8,11 @@ setup:
 # Actually build the thing
 build: setup
 	go mod tidy
-	go build -o output/ github.com/mcdonaldseanp/regulator
+	go build -o output/ github.com/puppetlabs/regulator
 
 install:
 	go mod tidy
-	go install github.com/mcdonaldseanp/regulator
+	go install github.com/puppetlabs/regulator
 
 # Build it before publishing to make sure this publication won't be broken
 publish: build

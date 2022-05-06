@@ -6,11 +6,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/mcdonaldseanp/regulator/local"
-	"github.com/mcdonaldseanp/regulator/remote"
-	. "github.com/mcdonaldseanp/regulator/rgerror"
-	"github.com/mcdonaldseanp/regulator/utils"
-	"github.com/mcdonaldseanp/regulator/version"
+	"github.com/puppetlabs/regulator/local"
+	"github.com/puppetlabs/regulator/remote"
+	. "github.com/puppetlabs/regulator/rgerror"
+	"github.com/puppetlabs/regulator/utils"
+	"github.com/puppetlabs/regulator/version"
 )
 
 type CLICommand struct {

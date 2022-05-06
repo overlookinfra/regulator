@@ -3,9 +3,9 @@ package local
 import (
 	"fmt"
 
-	"github.com/mcdonaldseanp/regulator/language"
-	. "github.com/mcdonaldseanp/regulator/rgerror"
-	"github.com/mcdonaldseanp/regulator/utils"
+	"github.com/puppetlabs/regulator/language"
+	. "github.com/puppetlabs/regulator/rgerror"
+	"github.com/puppetlabs/regulator/utils"
 )
 
 func runReaction(check_result bool, rctn language.Reaction, actn_name string, actn *language.Action, skipped_message string) language.ReactionResult {

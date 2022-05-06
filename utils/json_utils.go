@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	. "github.com/mcdonaldseanp/regulator/rgerror"
+	. "github.com/puppetlabs/regulator/rgerror"
 )
 
 func RenderJson(data interface{}) (string, *RGerror) {

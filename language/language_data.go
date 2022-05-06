@@ -5,8 +5,8 @@ import (
 	"sort"
 	"strings"
 
-	. "github.com/mcdonaldseanp/regulator/rgerror"
-	"github.com/mcdonaldseanp/regulator/sanitize"
+	. "github.com/puppetlabs/regulator/rgerror"
+	"github.com/puppetlabs/regulator/sanitize"
 	"gopkg.in/yaml.v2"
 )
 
