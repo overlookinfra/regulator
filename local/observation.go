@@ -5,8 +5,10 @@ import (
 	"strings"
 
 	"github.com/puppetlabs/regulator/language"
-	. "github.com/puppetlabs/regulator/rgerror"
-	"github.com/puppetlabs/regulator/utils"
+	"github.com/puppetlabs/regulator/localexec"
+	"github.com/puppetlabs/regulator/localfile"
+	"github.com/puppetlabs/regulator/render"
+	"github.com/puppetlabs/regulator/rgerror"
 )
 
 func RunObservation(name string, obsv language.Observation, impls map[string]language.Implement) language.ObservationResult {
@@ -18,7 +20,7 @@ func RunObservation(name string, obsv language.Observation, impls map[string]lan
 			script := impl.Path
 			executable := impl.Exe
 			args := language.ComputeArgs(impl.Observes.Args, obsv)
-			output, logs, cmd_arr := utils.BuildAndRunCommand(executable, script, args)
+			output, logs, cmd_arr := localexec.BuildAndRunCommand(executable, script, args)
 			if cmd_arr != nil {
 				return language.ObservationResult{
 					Succeeded:   true,
@@ -58,9 +60,9 @@ func RunAllObservations(obsvs map[string]language.Observation, impls map[string]
 	return results
 }
 
-func Observe(raw_data []byte) (string, *RGerror) {
+func Observe(raw_data []byte) (string, *rgerror.RGerror) {
 	// No validators are required to run here because ParseRegulation
-	// will use utils.ReadFileOrStdin which performs validation on
+	// will use ReadFileOrStdin which performs validation on
 	// maybe_file
 	var data language.Regulation
 	parse_rgerr := language.ParseRegulation(raw_data, &data)
@@ -68,7 +70,7 @@ func Observe(raw_data []byte) (string, *RGerror) {
 		return "", parse_rgerr
 	}
 	results := RunAllObservations(data.Observations, data.Implements)
-	final_result, parse_rgerr := utils.RenderJson(results)
+	final_result, parse_rgerr := render.RenderJson(results)
 	if parse_rgerr != nil {
 		return "", parse_rgerr
 	}
@@ -76,9 +78,9 @@ func Observe(raw_data []byte) (string, *RGerror) {
 	return final_result, nil
 }
 
-func CLIObserve(maybe_file string) *RGerror {
-	// utils.ReadFileOrStdin performs validation on maybe_file
-	raw_data, rgerr := utils.ReadFileOrStdin(maybe_file)
+func CLIObserve(maybe_file string) *rgerror.RGerror {
+	// ReadFileOrStdin performs validation on maybe_file
+	raw_data, rgerr := localfile.ReadFileOrStdin(maybe_file)
 	if rgerr != nil {
 		return rgerr
 	}

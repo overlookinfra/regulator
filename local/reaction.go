@@ -4,8 +4,9 @@ import (
 	"fmt"
 
 	"github.com/puppetlabs/regulator/language"
-	. "github.com/puppetlabs/regulator/rgerror"
-	"github.com/puppetlabs/regulator/utils"
+	"github.com/puppetlabs/regulator/localfile"
+	"github.com/puppetlabs/regulator/render"
+	"github.com/puppetlabs/regulator/rgerror"
 )
 
 func runReaction(check_result bool, rctn language.Reaction, actn_name string, actn *language.Action, skipped_message string) language.ReactionResult {
@@ -42,7 +43,7 @@ func runReaction(check_result bool, rctn language.Reaction, actn_name string, ac
 	}
 }
 
-func ReactTo(rgln *language.Regulation, obsv_results map[string]language.ObservationResult) (*language.ReactionResults, *RGerror) {
+func ReactTo(rgln *language.Regulation, obsv_results map[string]language.ObservationResult) (*language.ReactionResults, *rgerror.RGerror) {
 	results := language.ReactionResults{Reactions: make(map[string]language.ReactionResult), Observations: obsv_results}
 	for rctn_name, reaction := range rgln.Reactions {
 		obsv_name := reaction.Observation
@@ -158,7 +159,7 @@ func ReactTo(rgln *language.Regulation, obsv_results map[string]language.Observa
 	return &results, nil
 }
 
-func React(raw_data []byte) (string, *RGerror) {
+func React(raw_data []byte) (string, *rgerror.RGerror) {
 	var data language.Regulation
 	parse_arr := language.ParseRegulation(raw_data, &data)
 	if parse_arr != nil {
@@ -170,7 +171,7 @@ func React(raw_data []byte) (string, *RGerror) {
 	if rgerr != nil {
 		return "", rgerr
 	}
-	final_result, parse_rgerr := utils.RenderJson(results)
+	final_result, parse_rgerr := render.RenderJson(results)
 	if parse_rgerr != nil {
 		return "", parse_rgerr
 	}
@@ -178,9 +179,9 @@ func React(raw_data []byte) (string, *RGerror) {
 	return final_result, nil
 }
 
-func CLIReact(maybe_file string) *RGerror {
-	// utils.ReadFileOrStdin performs validation on maybe_file
-	raw_data, rgerr := utils.ReadFileOrStdin(maybe_file)
+func CLIReact(maybe_file string) *rgerror.RGerror {
+	// ReadFileOrStdin performs validation on maybe_file
+	raw_data, rgerr := localfile.ReadFileOrStdin(maybe_file)
 	if rgerr != nil {
 		return rgerr
 	}

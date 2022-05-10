@@ -1,73 +1,89 @@
-package utils
+package validator
 
 import (
+	"encoding/json"
 	"fmt"
 	"path/filepath"
 	"regexp"
 
-	. "github.com/puppetlabs/regulator/rgerror"
+	"github.com/puppetlabs/regulator/rgerror"
 )
 
-type ValidateType int
-
-const (
-	NotEmpty ValidateType = iota
-	IsNumber
-	IsFile
-	IsIP
-)
+// Validators should take a string that looks something like:
+//
+// {"name":"input_param","value":"some_value_to_validate","validate":["NotEmpty","IsNumber"]}
 
 type Validator struct {
-	Name     string
-	Value    string
-	Validate []ValidateType
+	Name     string   `json:"name"`
+	Value    string   `json:"value"`
+	Validate []string `json:"validate"`
 }
 
-func ValidateParams(params []Validator) *RGerror {
-	for _, data := range params {
+func ValidateParams(params string) *rgerror.RGerror {
+	unmarshald_data := []Validator{}
+	// YAML would have been more human readable, but the use of whitespace in
+	// yaml as an actual separator makes it really ugly to create docstrings
+	// with yaml in them (which is the primary way this is meant to be used:
+	// you pass this function a json docstring that identifies what to
+	// validate
+	err := json.Unmarshal([]byte(params), &unmarshald_data)
+	if err != nil {
+		return &rgerror.RGerror{
+			Kind:    rgerror.ExecError,
+			Message: fmt.Sprintf("Failed to parse validator as yaml:\n%s", err),
+			Origin:  err,
+		}
+	}
+	for _, data := range unmarshald_data {
 		for _, validate_type := range data.Validate {
 			switch validate_type {
-			case NotEmpty:
+			case "NotEmpty":
 				if !(len(data.Value) > 0) {
-					return &RGerror{
-						InvalidInput,
-						fmt.Sprintf("'%s' is empty", data.Name),
-						nil,
+					return &rgerror.RGerror{
+						Kind:    rgerror.InvalidInput,
+						Message: fmt.Sprintf("'%s' is empty", data.Name),
+						Origin:  nil,
 					}
 				}
-			case IsNumber:
+			case "IsNumber":
 				matcher, _ := regexp.Compile(`^[\d]+$`)
 				if !matcher.Match([]byte(data.Value)) {
-					return &RGerror{
-						InvalidInput,
-						fmt.Sprintf("'%s' is not a number, given %s", data.Name, data.Value),
-						nil,
+					return &rgerror.RGerror{
+						Kind:    rgerror.InvalidInput,
+						Message: fmt.Sprintf("'%s' is not a number, given %s", data.Name, data.Value),
+						Origin:  nil,
 					}
 				}
-			case IsIP:
+			case "IsIP":
 				matcher, _ := regexp.Compile(`^[\d\.]+$`)
 				if !matcher.Match([]byte(data.Value)) {
-					return &RGerror{
-						InvalidInput,
-						fmt.Sprintf("'%s' is not an IP address, given %s", data.Name, data.Value),
-						nil,
+					return &rgerror.RGerror{
+						Kind:    rgerror.InvalidInput,
+						Message: fmt.Sprintf("'%s' is not an IP address, given %s", data.Name, data.Value),
+						Origin:  nil,
 					}
 				}
-			case IsFile:
+			case "IsFile":
 				files, err := filepath.Glob(data.Value)
 				if err != nil {
-					return &RGerror{
-						InvalidInput,
-						fmt.Sprintf("Failed attempting to check if '%s' is a file or directory, failure:\n%s", data.Name, err),
-						nil,
+					return &rgerror.RGerror{
+						Kind:    rgerror.InvalidInput,
+						Message: fmt.Sprintf("Failed attempting to check if '%s' is a file or directory, failure:\n%s", data.Name, err),
+						Origin:  nil,
 					}
 				}
 				if len(files) < 1 {
-					return &RGerror{
-						InvalidInput,
-						fmt.Sprintf("'%s' is not a file or directory, given %s", data.Name, data.Value),
-						nil,
+					return &rgerror.RGerror{
+						Kind:    rgerror.InvalidInput,
+						Message: fmt.Sprintf("'%s' is not a file or directory, given %s", data.Name, data.Value),
+						Origin:  nil,
 					}
+				}
+			default:
+				return &rgerror.RGerror{
+					Kind:    rgerror.ExecError,
+					Message: fmt.Sprintf("Unknown matcher: %s", validate_type),
+					Origin:  nil,
 				}
 			}
 		}

@@ -1,4 +1,4 @@
-REGULATOR_GO_PACKAGES=. ./connection ./language ./local ./remote ./rgerror ./utils ./validator ./version
+REGULATOR_GO_PACKAGES=. ./connection ./language ./local ./localexec ./localfile ./remote ./render ./rgerror ./sanitize ./validator ./version
 
 # Make the build dir, and remove anything already inside it
 setup:

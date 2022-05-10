@@ -4,37 +4,41 @@ import (
 	"fmt"
 
 	"github.com/puppetlabs/regulator/connection"
-	. "github.com/puppetlabs/regulator/rgerror"
-	"github.com/puppetlabs/regulator/utils"
-	. "github.com/puppetlabs/regulator/validator"
+	"github.com/puppetlabs/regulator/localfile"
+	"github.com/puppetlabs/regulator/rgerror"
+	"github.com/puppetlabs/regulator/validator"
 )
 
-func Observe(raw_data []byte, username string, target string, port string) (string, *RGerror) {
-	arr := ValidateParams(
-		[]Validator{
-			{Name: "username", Value: username, Validate: []ValidateType{NotEmpty}},
-			{Name: "target", Value: target, Validate: []ValidateType{NotEmpty}},
-			{Name: "port", Value: port, Validate: []ValidateType{NotEmpty, IsNumber}},
-		})
-	if arr != nil {
-		return "", arr
+func Observe(raw_data []byte, username string, target string, port string) (string, *rgerror.RGerror) {
+	rgerr := validator.ValidateParams(fmt.Sprintf(
+		`[
+			{"name":"username","value":"%s","validate":["NotEmpty"]},
+			{"name":"target","value":"%s","validate":["NotEmpty"]},
+			{"name":"port","value":"%s","validate":["NotEmpty","IsNumber"]}
+		 ]`,
+		username,
+		target,
+		port,
+	))
+	if rgerr != nil {
+		return "", rgerr
 	}
-	sout, serr, ec, arr := connection.RunSSHCommand("$HOME/.regulator/bin/regulator observe local --stdin", string(raw_data), username, target, port)
-	if arr != nil {
-		return sout, &RGerror{
-			Kind: RemoteExecError,
+	sout, serr, ec, rgerr := connection.RunSSHCommand("$HOME/.regulator/bin/regulator observe local --stdin", string(raw_data), username, target, port)
+	if rgerr != nil {
+		return sout, &rgerror.RGerror{
+			Kind: rgerror.RemoteExecError,
 			Message: fmt.Sprintf("regulator client on remote target returned non-zero exit code %d\n\nStdout:\n%s\nStderr:\n%s\n",
 				ec,
 				sout,
 				serr),
-			Origin: arr.Origin,
+			Origin: rgerr.Origin,
 		}
 	}
 	return sout, nil
 }
 
-func CLIObserve(maybe_file string, username string, target string, port string) *RGerror {
-	raw_data, arr := utils.ReadFileOrStdin(maybe_file)
+func CLIObserve(maybe_file string, username string, target string, port string) *rgerror.RGerror {
+	raw_data, arr := localfile.ReadFileOrStdin(maybe_file)
 	if arr != nil {
 		return arr
 	}

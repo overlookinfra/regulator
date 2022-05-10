@@ -5,7 +5,7 @@ import (
 	"sort"
 	"strings"
 
-	. "github.com/puppetlabs/regulator/rgerror"
+	"github.com/puppetlabs/regulator/rgerror"
 	"github.com/puppetlabs/regulator/sanitize"
 	"gopkg.in/yaml.v2"
 )
@@ -276,12 +276,12 @@ type Regulation struct {
 // Idempotent function for merging new data in to Regulation
 // struct. Can be used more than once to read data from multiple
 // sources
-func ParseRegulation(raw_data []byte, data *Regulation) *RGerror {
+func ParseRegulation(raw_data []byte, data *Regulation) *rgerror.RGerror {
 	unmarshald_data := Regulation{}
 	err := yaml.Unmarshal(raw_data, &unmarshald_data)
 	if err != nil {
-		return &RGerror{
-			Kind:    ExecError,
+		return &rgerror.RGerror{
+			Kind:    rgerror.ExecError,
 			Message: fmt.Sprintf("Failed to parse yaml:\n%s", err),
 			Origin:  err,
 		}
@@ -296,7 +296,7 @@ func ParseRegulation(raw_data []byte, data *Regulation) *RGerror {
 // Yeah this is big and ugly and could probably have helper functions,
 // but I don't want to do that much interface magic and pass enough
 // strings around to make the messages different and helpful.
-func ConcatRegulation(first *Regulation, second *Regulation) *RGerror {
+func ConcatRegulation(first *Regulation, second *Regulation) *rgerror.RGerror {
 	var conflicts map[string]string = make(map[string]string)
 	if first.Observations == nil {
 		first.Observations = make(map[string]Observation)
@@ -312,8 +312,8 @@ func ConcatRegulation(first *Regulation, second *Regulation) *RGerror {
 	}
 	for obsv_name, obsv := range second.Observations {
 		if _, conflicted := first.Observations[obsv_name]; conflicted == true {
-			return &RGerror{
-				Kind:    InvalidInput,
+			return &rgerror.RGerror{
+				Kind:    rgerror.InvalidInput,
 				Message: fmt.Sprintf("Duplicate observation name %s", obsv_name),
 				Origin:  nil,
 			}
@@ -328,8 +328,8 @@ func ConcatRegulation(first *Regulation, second *Regulation) *RGerror {
 				// add this latest observation to the conflicts map because
 				// there's already a matching hash there
 				if first.Observations[conflict].Expect == obsv.Expect {
-					return &RGerror{
-						Kind:    InvalidInput,
+					return &rgerror.RGerror{
+						Kind:    rgerror.InvalidInput,
 						Message: fmt.Sprintf("Observation %s conflicts with %s", obsv_name, conflict),
 						Origin:  nil,
 					}
@@ -342,16 +342,16 @@ func ConcatRegulation(first *Regulation, second *Regulation) *RGerror {
 	}
 	for rctn_name, rctn := range second.Reactions {
 		if _, conflicted := first.Reactions[rctn_name]; conflicted == true {
-			return &RGerror{
-				Kind:    InvalidInput,
+			return &rgerror.RGerror{
+				Kind:    rgerror.InvalidInput,
 				Message: fmt.Sprintf("Duplicate reaction name %s", rctn_name),
 				Origin:  nil,
 			}
 		}
 		for _, key := range rctn.HashKeys() {
 			if conflict, conflicted := conflicts[key]; conflicted == true {
-				return &RGerror{
-					Kind:    InvalidInput,
+				return &rgerror.RGerror{
+					Kind:    rgerror.InvalidInput,
 					Message: fmt.Sprintf("Reaction %s conflicts with %s", rctn_name, conflict),
 					Origin:  nil,
 				}
@@ -363,16 +363,16 @@ func ConcatRegulation(first *Regulation, second *Regulation) *RGerror {
 	}
 	for actn_name, actn := range second.Actions {
 		if _, conflicted := first.Actions[actn_name]; conflicted == true {
-			return &RGerror{
-				Kind:    InvalidInput,
+			return &rgerror.RGerror{
+				Kind:    rgerror.InvalidInput,
 				Message: fmt.Sprintf("Duplicate action name %s", actn_name),
 				Origin:  nil,
 			}
 		}
 		for _, key := range actn.HashKeys() {
 			if conflict, conflicted := conflicts[key]; conflicted == true {
-				return &RGerror{
-					Kind:    InvalidInput,
+				return &rgerror.RGerror{
+					Kind:    rgerror.InvalidInput,
 					Message: fmt.Sprintf("Action %s conflicts with %s", actn_name, conflict),
 					Origin:  nil,
 				}
@@ -384,16 +384,16 @@ func ConcatRegulation(first *Regulation, second *Regulation) *RGerror {
 	}
 	for impl_name, impl := range second.Implements {
 		if _, conflicted := first.Implements[impl_name]; conflicted == true {
-			return &RGerror{
-				Kind:    InvalidInput,
+			return &rgerror.RGerror{
+				Kind:    rgerror.InvalidInput,
 				Message: fmt.Sprintf("Duplicate implement name %s", impl_name),
 				Origin:  nil,
 			}
 		}
 		for _, key := range impl.HashKeys() {
 			if conflict, conflicted := conflicts[key]; conflicted == true {
-				return &RGerror{
-					Kind:    InvalidInput,
+				return &rgerror.RGerror{
+					Kind:    rgerror.InvalidInput,
 					Message: fmt.Sprintf("Implement %s conflicts with %s", impl_name, conflict),
 					Origin:  nil,
 				}

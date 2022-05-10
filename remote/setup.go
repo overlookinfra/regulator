@@ -5,13 +5,26 @@ import (
 	"strings"
 
 	"github.com/puppetlabs/regulator/connection"
-	. "github.com/puppetlabs/regulator/rgerror"
-	"github.com/puppetlabs/regulator/utils"
+	"github.com/puppetlabs/regulator/render"
+	"github.com/puppetlabs/regulator/rgerror"
+	"github.com/puppetlabs/regulator/validator"
 	"github.com/puppetlabs/regulator/version"
 )
 
-func Setup(username string, target string, port string) (string, string, *RGerror) {
-
+func Setup(username string, target string, port string) (string, string, *rgerror.RGerror) {
+	rgerr := validator.ValidateParams(fmt.Sprintf(
+		`[
+			{"name":"username","value":"%s","validate":["NotEmpty"]},
+			{"name":"target","value":"%s","validate":["NotEmpty"]},
+			{"name":"port","value":"%s","validate":["NotEmpty","IsNumber"]}
+		 ]`,
+		username,
+		target,
+		port,
+	))
+	if rgerr != nil {
+		return "", "", rgerr
+	}
 	command := fmt.Sprintf(
 		`#!/usr/bin/env bash
 
@@ -22,8 +35,8 @@ func Setup(username string, target string, port string) (string, string, *RGerro
 	)
 	sout, serr, ec, arr := connection.RunSSHCommand(command, "", username, target, port)
 	if arr != nil {
-		return "", "", &RGerror{
-			Kind: RemoteExecError,
+		return "", "", &rgerror.RGerror{
+			Kind: rgerror.RemoteExecError,
 			Message: fmt.Sprintf("regulator client on remote target returned non-zero exit code %d\n\nStdout:\n%s\nStderr:\n%s\n",
 				ec,
 				sout,
@@ -34,7 +47,7 @@ func Setup(username string, target string, port string) (string, string, *RGerro
 	return sout, serr, nil
 }
 
-func CLISetup(username string, target string, port string) *RGerror {
+func CLISetup(username string, target string, port string) *rgerror.RGerror {
 	_, serr, airr := Setup(username, target, port)
 	if airr != nil {
 		return airr
@@ -42,7 +55,7 @@ func CLISetup(username string, target string, port string) *RGerror {
 	output := make(map[string]interface{})
 	output["ok"] = true
 	output["logs"] = strings.TrimSpace(serr)
-	final_result, json_rgerr := utils.RenderJson(output)
+	final_result, json_rgerr := render.RenderJson(output)
 	if json_rgerr != nil {
 		return json_rgerr
 	}

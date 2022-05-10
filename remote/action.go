@@ -4,39 +4,44 @@ import (
 	"fmt"
 
 	"github.com/puppetlabs/regulator/connection"
-	. "github.com/puppetlabs/regulator/rgerror"
-	"github.com/puppetlabs/regulator/utils"
-	. "github.com/puppetlabs/regulator/validator"
+	"github.com/puppetlabs/regulator/localfile"
+	"github.com/puppetlabs/regulator/rgerror"
+	"github.com/puppetlabs/regulator/validator"
 )
 
-func Run(raw_data []byte, actn_name string, username string, target string, port string) (string, *RGerror) {
-	arr := ValidateParams(
-		[]Validator{
-			{Name: "action_name", Value: actn_name, Validate: []ValidateType{NotEmpty}},
-			{Name: "username", Value: username, Validate: []ValidateType{NotEmpty}},
-			{Name: "target", Value: target, Validate: []ValidateType{NotEmpty}},
-			{Name: "port", Value: port, Validate: []ValidateType{NotEmpty, IsNumber}},
-		})
-	if arr != nil {
-		return "", arr
+func Run(raw_data []byte, actn_name string, username string, target string, port string) (string, *rgerror.RGerror) {
+	rgerr := validator.ValidateParams(fmt.Sprintf(
+		`[
+			{"name":"action name","value":"%s","validate":["NotEmpty"]},
+			{"name":"username","value":"%s","validate":["NotEmpty"]},
+			{"name":"target","value":"%s","validate":["NotEmpty"]},
+			{"name":"port","value":"%s","validate":["NotEmpty","IsNumber"]}
+		 ]`,
+		actn_name,
+		username,
+		target,
+		port,
+	))
+	if rgerr != nil {
+		return "", rgerr
 	}
 	command := fmt.Sprintf("$HOME/.regulator/bin/regulator run local \"%s\" --stdin", actn_name)
-	sout, serr, ec, arr := connection.RunSSHCommand(command, string(raw_data), username, target, port)
-	if arr != nil {
-		return sout, &RGerror{
-			Kind: RemoteExecError,
+	sout, serr, ec, rgerr := connection.RunSSHCommand(command, string(raw_data), username, target, port)
+	if rgerr != nil {
+		return sout, &rgerror.RGerror{
+			Kind: rgerror.RemoteExecError,
 			Message: fmt.Sprintf("regulator client on remote target returned non-zero exit code %d\n\nStdout:\n%s\nStderr:\n%s\n",
 				ec,
 				sout,
 				serr),
-			Origin: arr.Origin,
+			Origin: rgerr.Origin,
 		}
 	}
 	return sout, nil
 }
 
-func CLIRun(maybe_file string, actn_name string, username string, target string, port string) *RGerror {
-	raw_data, arr := utils.ReadFileOrStdin(maybe_file)
+func CLIRun(maybe_file string, actn_name string, username string, target string, port string) *rgerror.RGerror {
+	raw_data, arr := localfile.ReadFileOrStdin(maybe_file)
 	if arr != nil {
 		return arr
 	}

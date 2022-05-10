@@ -1,4 +1,4 @@
-package utils
+package localfile
 
 import (
 	"bufio"
@@ -7,8 +7,8 @@ import (
 	"os"
 	"strings"
 
-	. "github.com/puppetlabs/regulator/rgerror"
-	. "github.com/puppetlabs/regulator/validator"
+	"github.com/puppetlabs/regulator/rgerror"
+	"github.com/puppetlabs/regulator/validator"
 )
 
 const STDIN_IDENTIFIER string = "__STDIN__"
@@ -22,33 +22,36 @@ func readFromStdin() string {
 	return builder.String()
 }
 
-func ChooseFileOrStdin(specfile string, use_stdin bool) (string, *RGerror) {
+func ChooseFileOrStdin(specfile string, use_stdin bool) (string, *rgerror.RGerror) {
 	if use_stdin {
 		if len(specfile) > 0 {
-			return "", &RGerror{
-				InvalidInput,
-				fmt.Sprintf("Cannot specify both a file and to use stdin"),
-				nil,
+			return "", &rgerror.RGerror{
+				Kind:    rgerror.InvalidInput,
+				Message: "Cannot specify both a file and to use stdin",
+				Origin:  nil,
 			}
 		}
 		return STDIN_IDENTIFIER, nil
 	} else {
 		// Validate that the thing is actually a file on disk before
 		// going any further
-		arr := ValidateParams(
-			[]Validator{
-				Validator{"specfile", specfile, []ValidateType{NotEmpty, IsFile}},
-			})
-		if arr != nil {
-			return "", arr
+		//
+		// Cheat a little with the validator: this function is mostly used
+		// for the CLI commands, so use a name that shows it's the flag
+		rgerr := validator.ValidateParams(fmt.Sprintf(
+			`[{"name":"--file","value":"%s","validate":["NotEmpty","IsFile"]}]`,
+			specfile,
+		))
+		if rgerr != nil {
+			return "", rgerr
 		}
 		return specfile, nil
 	}
 }
 
-func ReadFileOrStdin(maybe_file string) ([]byte, *RGerror) {
+func ReadFileOrStdin(maybe_file string) ([]byte, *rgerror.RGerror) {
 	var raw_data []byte
-	var airr *RGerror
+	var airr *rgerror.RGerror
 	if maybe_file == STDIN_IDENTIFIER {
 		raw_data = []byte(readFromStdin())
 	} else {
@@ -60,13 +63,13 @@ func ReadFileOrStdin(maybe_file string) ([]byte, *RGerror) {
 	return raw_data, nil
 }
 
-func ReadFileInChunks(location string) ([]byte, *RGerror) {
+func ReadFileInChunks(location string) ([]byte, *rgerror.RGerror) {
 	f, err := os.OpenFile(location, os.O_RDWR|os.O_CREATE, 0755)
 	if err != nil {
-		return nil, &RGerror{
-			ExecError,
-			fmt.Sprintf("Failed to open file:\n%s", err),
-			err,
+		return nil, &rgerror.RGerror{
+			Kind:    rgerror.ExecError,
+			Message: fmt.Sprintf("Failed to open file:\n%s", err),
+			Origin:  err,
 		}
 	}
 	defer f.Close()
@@ -81,10 +84,10 @@ func ReadFileInChunks(location string) ([]byte, *RGerror) {
 		}
 		if err != nil {
 			if err != io.EOF {
-				return nil, &RGerror{
-					ExecError,
-					fmt.Sprintf("Failed to read file:\n%s", err),
-					err,
+				return nil, &rgerror.RGerror{
+					Kind:    rgerror.ExecError,
+					Message: fmt.Sprintf("Failed to read file:\n%s", err),
+					Origin:  err,
 				}
 			} else {
 				break
