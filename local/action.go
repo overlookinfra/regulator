@@ -15,7 +15,7 @@ func RunAction(actn language.Action) language.ActionResult {
 	result := language.ActionResult{
 		Action: actn,
 	}
-	output, logs, cmd_rgerr := localexec.BuildAndRunCommand(actn.Exe, actn.Path, actn.Args)
+	output, logs, cmd_rgerr := localexec.BuildAndRunCommand(actn.Exe, actn.Path, actn.Script, actn.Args)
 	if cmd_rgerr != nil {
 		result.Succeeded = false
 		result.Output = output

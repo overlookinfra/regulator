@@ -96,3 +96,24 @@ func ReadFileInChunks(location string) ([]byte, *rgerror.RGerror) {
 	}
 	return file_contents, nil
 }
+
+func OverwriteFile(location string, data []byte) *rgerror.RGerror {
+	f, err := os.OpenFile(location, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
+	if err != nil {
+		return &rgerror.RGerror{
+			Kind:    rgerror.ExecError,
+			Message: fmt.Sprintf("Failed to open file:\n%s", err),
+			Origin:  err,
+		}
+	}
+	defer f.Close()
+	_, err = f.Write(data)
+	if err != nil {
+		return &rgerror.RGerror{
+			Kind:    rgerror.ExecError,
+			Message: fmt.Sprintf("Failed to write to file:\n%s", err),
+			Origin:  err,
+		}
+	}
+	return nil
+}

@@ -17,10 +17,11 @@ func RunObservation(name string, obsv language.Observation, impls map[string]lan
 
 	for _, impl := range impls {
 		if impl.Observes.Query == query && impl.Observes.Entity == entity {
-			script := impl.Path
+			impl_file := impl.Path
+			impl_script := impl.Script
 			executable := impl.Exe
 			args := language.ComputeArgs(impl.Observes.Args, obsv)
-			output, logs, cmd_arr := localexec.BuildAndRunCommand(executable, script, args)
+			output, logs, cmd_arr := localexec.BuildAndRunCommand(executable, impl_file, impl_script, args)
 			if cmd_arr != nil {
 				return language.ObservationResult{
 					Succeeded:   true,

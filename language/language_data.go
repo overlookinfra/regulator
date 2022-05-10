@@ -86,9 +86,10 @@ func (obsv Observation) Empty() bool {
 // Actions
 // ---------------------------------------------------------------
 type Action struct {
-	Path string   `yaml:"path" json:"path"`
-	Exe  string   `yaml:"exe,omitempty" json:"exe,omitempty"`
-	Args []string `yaml:"args,omitempty" json:"args,omitempty"`
+	Path   string   `yaml:"path" json:"path"`
+	Script string   `yaml:"script" json:"script"`
+	Exe    string   `yaml:"exe,omitempty" json:"exe,omitempty"`
+	Args   []string `yaml:"args,omitempty" json:"args,omitempty"`
 }
 
 type ActionResult struct {
@@ -108,7 +109,13 @@ func (actn Action) HashKeys() []string {
 }
 
 func (actn Action) Empty() bool {
-	return actn.Path == ""
+	if actn.Path == "" && actn.Script == "" {
+		return true
+	}
+	if actn.Exe == "" {
+		return true
+	}
+	return false
 }
 
 // ---------------------------------------------------------------
@@ -178,8 +185,9 @@ type ObservationImplement struct {
 }
 
 type Implement struct {
-	Path     string               `yaml:"path"`
-	Exe      string               `yaml:"exe,omitempty"`
+	Path     string               `yaml:"path,omitempty"`
+	Script   string               `yaml:"script,omitempty"`
+	Exe      string               `yaml:"exe"`
 	Reacts   ReactionImplement    `yaml:"reacts,omitempty"`
 	Observes ObservationImplement `yaml:"observes,omitempty"`
 }
@@ -253,7 +261,10 @@ func (impl Implement) HashKeys() []string {
 // both reacting and observing (I'm pretty
 // sure they are useless without that)
 func (impl Implement) Empty() bool {
-	if impl.Path == "" {
+	if impl.Path == "" && impl.Script == "" {
+		return true
+	}
+	if impl.Exe == "" {
 		return true
 	}
 	if emptyReacts(impl) && emptyObserves(impl) {
@@ -381,6 +392,14 @@ func ConcatRegulation(first *Regulation, second *Regulation) *rgerror.RGerror {
 			}
 		}
 		first.Actions[actn_name] = actn
+	}
+	// Ensure that the default impls are added first so that
+	// any attempts to add an impl with the same name as a
+	// default will always conflict.
+	for default_impl_name, default_impl := range DEFAULT_IMPLS {
+		// Don't even check for collisions or anything, just re-add
+		// all the defaults every time.
+		first.Implements[default_impl_name] = default_impl
 	}
 	for impl_name, impl := range second.Implements {
 		if _, conflicted := first.Implements[impl_name]; conflicted == true {
