@@ -118,6 +118,9 @@ func ConcatRegulation(first *operation.Regulation, second *operation.Regulation)
 		}
 		first.Actions[actn_name] = actn
 	}
+	// We have to edit the impls in the second regulation to ensure
+	// that the default impls don't create conflicts
+	impls_to_add := second.Implements
 	// Ensure that the default impls are added first so that
 	// any attempts to add an impl with the same name as a
 	// default will always conflict.
@@ -128,8 +131,11 @@ func ConcatRegulation(first *operation.Regulation, second *operation.Regulation)
 		for _, key := range default_impl.HashKeys() {
 			conflicts[key] = default_impl_name
 		}
+		// Remove all the default impls from the impls that are to be
+		// added to the first regulation.
+		delete(impls_to_add, default_impl_name)
 	}
-	for impl_name, impl := range second.Implements {
+	for impl_name, impl := range impls_to_add {
 		if impl.Empty() {
 			return &rgerror.RGerror{
 				Kind:    rgerror.InvalidInput,
