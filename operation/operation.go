@@ -163,29 +163,29 @@ func (rctn Reaction) Empty() bool {
 // Implements
 // ---------------------------------------------------------------
 type Correction struct {
-	Entity      string   `yaml:"entity"`
-	Query       string   `yaml:"query"`
-	Starts_From []string `yaml:"starts_from"`
-	Results_In  string   `yaml:"results_in"`
+	Entity      string   `yaml:"entity" json:"entity"`
+	Query       string   `yaml:"query" json:"query"`
+	Starts_From []string `yaml:"starts_from" json:"starts_from"`
+	Results_In  string   `yaml:"results_in" json:"results_in"`
 }
 
 type ReactionImplement struct {
-	Corrects Correction `yaml:"corrects,omitempty"`
-	Args     []string   `yaml:"args"`
+	Corrects Correction `yaml:"corrects,omitempty" json:"corrects,omitempty"`
+	Args     []string   `yaml:"args" json:"args"`
 }
 
 type ObservationImplement struct {
-	Entity string   `yaml:"entity"`
-	Query  string   `yaml:"query"`
-	Args   []string `yaml:"args"`
+	Entity string   `yaml:"entity" json:"entity"`
+	Query  string   `yaml:"query" json:"query"`
+	Args   []string `yaml:"args" json:"args"`
 }
 
 type Implement struct {
-	Path     string               `yaml:"path,omitempty"`
-	Script   string               `yaml:"script,omitempty"`
-	Exe      string               `yaml:"exe"`
-	Reacts   ReactionImplement    `yaml:"reacts,omitempty"`
-	Observes ObservationImplement `yaml:"observes,omitempty"`
+	Path     string               `yaml:"path,omitempty" json:"path,omitempty"`
+	Script   string               `yaml:"script,omitempty" json:"script,omitempty"`
+	Exe      string               `yaml:"exe" json:"exe"`
+	Reacts   ReactionImplement    `yaml:"reacts,omitempty" json:"reacts,omitempty"`
+	Observes ObservationImplement `yaml:"observes,omitempty" json:"observes,omitempty"`
 }
 
 func emptyObserves(impl Implement) bool {
@@ -274,8 +274,8 @@ func (impl Implement) Empty() bool {
 // Everything together
 // ---------------------------------------------------------------
 type Regulation struct {
-	Reactions    map[string]Reaction    `yaml:"reactions,omitempty"`
-	Observations map[string]Observation `yaml:"observations,omitempty"`
-	Implements   map[string]Implement   `yaml:"implements,omitempty"`
-	Actions      map[string]Action      `yaml:"actions,omitempty"`
+	Reactions    map[string]Reaction    `yaml:"reactions,omitempty" json:"reactions,omitempty"`
+	Observations map[string]Observation `yaml:"observations,omitempty" json:"observations,omitempty"`
+	Implements   map[string]Implement   `yaml:"implements,omitempty" json:"implements,omitempty"`
+	Actions      map[string]Action      `yaml:"actions,omitempty" json:"actions,omitempty"`
 }
