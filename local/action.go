@@ -3,16 +3,17 @@ package local
 import (
 	"fmt"
 
-	"github.com/puppetlabs/regulator/language"
 	"github.com/puppetlabs/regulator/localexec"
 	"github.com/puppetlabs/regulator/localfile"
+	"github.com/puppetlabs/regulator/operdefs"
+	"github.com/puppetlabs/regulator/operparse"
 	"github.com/puppetlabs/regulator/render"
 	"github.com/puppetlabs/regulator/rgerror"
 	"github.com/puppetlabs/regulator/validator"
 )
 
-func RunAction(actn language.Action) language.ActionResult {
-	result := language.ActionResult{
+func RunAction(actn operdefs.Action) operdefs.ActionResult {
+	result := operdefs.ActionResult{
 		Action: actn,
 	}
 	output, logs, cmd_rgerr := localexec.BuildAndRunCommand(actn.Exe, actn.Path, actn.Script, actn.Args)
@@ -36,12 +37,12 @@ func Run(raw_data []byte, actn_name string) (string, *rgerror.RGerror) {
 	if rgerr != nil {
 		return "", rgerr
 	}
-	var data language.Regulation
-	parse_rgerr := language.ParseRegulation(raw_data, &data)
+	var data operdefs.Regulation
+	parse_rgerr := operparse.ParseRegulation(raw_data, &data)
 	if parse_rgerr != nil {
 		return "", parse_rgerr
 	}
-	actn := language.SelectAction(actn_name, data.Actions)
+	actn := operparse.SelectAction(actn_name, data.Actions)
 	if actn == nil {
 		return "", &rgerror.RGerror{
 			Kind:    rgerror.InvalidInput,
@@ -50,7 +51,7 @@ func Run(raw_data []byte, actn_name string) (string, *rgerror.RGerror) {
 		}
 	}
 	result := RunAction(*actn)
-	raw_final_result := language.ActionResults{Actions: make(map[string]language.ActionResult)}
+	raw_final_result := operdefs.ActionResults{Actions: make(map[string]operdefs.ActionResult)}
 	raw_final_result.Actions[actn_name] = result
 	// The result for actions (for now) is an actionresults set with one action
 	// result in the actions field.

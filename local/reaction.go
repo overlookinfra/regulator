@@ -3,17 +3,18 @@ package local
 import (
 	"fmt"
 
-	"github.com/puppetlabs/regulator/language"
 	"github.com/puppetlabs/regulator/localfile"
+	"github.com/puppetlabs/regulator/operdefs"
+	"github.com/puppetlabs/regulator/operparse"
 	"github.com/puppetlabs/regulator/render"
 	"github.com/puppetlabs/regulator/rgerror"
 )
 
-func runReaction(check_result bool, rctn language.Reaction, actn_name string, actn *language.Action, skipped_message string) language.ReactionResult {
+func runReaction(check_result bool, rctn operdefs.Reaction, actn_name string, actn *operdefs.Action, skipped_message string) operdefs.ReactionResult {
 	if check_result {
 		action_result := RunAction(*actn)
 		if !action_result.Succeeded {
-			return language.ReactionResult{
+			return operdefs.ReactionResult{
 				Succeeded: false,
 				Skipped:   false,
 				Output:    action_result.Output,
@@ -22,7 +23,7 @@ func runReaction(check_result bool, rctn language.Reaction, actn_name string, ac
 				Reaction:  rctn,
 			}
 		} else {
-			return language.ReactionResult{
+			return operdefs.ReactionResult{
 				Succeeded: true,
 				Skipped:   false,
 				Output:    action_result.Output,
@@ -32,7 +33,7 @@ func runReaction(check_result bool, rctn language.Reaction, actn_name string, ac
 			}
 		}
 	} else {
-		return language.ReactionResult{
+		return operdefs.ReactionResult{
 			Succeeded: true,
 			Skipped:   true,
 			Output:    "",
@@ -43,14 +44,14 @@ func runReaction(check_result bool, rctn language.Reaction, actn_name string, ac
 	}
 }
 
-func ReactTo(rgln *language.Regulation, obsv_results map[string]language.ObservationResult) (*language.ReactionResults, *rgerror.RGerror) {
-	results := language.ReactionResults{Reactions: make(map[string]language.ReactionResult), Observations: obsv_results}
+func ReactTo(rgln *operdefs.Regulation, obsv_results map[string]operdefs.ObservationResult) (*operdefs.ReactionResults, *rgerror.RGerror) {
+	results := operdefs.ReactionResults{Reactions: make(map[string]operdefs.ReactionResult), Observations: obsv_results}
 	for rctn_name, reaction := range rgln.Reactions {
 		obsv_name := reaction.Observation
-		obsv := language.SelectObservation(obsv_name, rgln.Observations)
-		obsv_result := language.SelectObservationResult(obsv_name, obsv_results)
+		obsv := operparse.SelectObservation(obsv_name, rgln.Observations)
+		obsv_result := operparse.SelectObservationResult(obsv_name, obsv_results)
 		if obsv == nil {
-			results.Reactions[rctn_name] = language.ReactionResult{
+			results.Reactions[rctn_name] = operdefs.ReactionResult{
 				Succeeded: false,
 				Skipped:   true,
 				Output:    "",
@@ -61,7 +62,7 @@ func ReactTo(rgln *language.Regulation, obsv_results map[string]language.Observa
 			continue
 		}
 		if obsv_result.Succeeded == false {
-			results.Reactions[rctn_name] = language.ReactionResult{
+			results.Reactions[rctn_name] = operdefs.ReactionResult{
 				Succeeded: false,
 				Skipped:   true,
 				Output:    obsv_result.Result,
@@ -70,11 +71,11 @@ func ReactTo(rgln *language.Regulation, obsv_results map[string]language.Observa
 				Reaction:  reaction,
 			}
 		} else {
-			var actn *language.Action = nil
+			var actn *operdefs.Action = nil
 			if reaction.Action == "correction" {
-				actn_name, actn := language.SelectImplementActionForCorrection(*obsv, *obsv_result, rgln.Implements)
+				actn_name, actn := operparse.SelectImplementActionForCorrection(*obsv, *obsv_result, rgln.Implements)
 				if actn == nil && obsv_result.Expected == false {
-					results.Reactions[rctn_name] = language.ReactionResult{
+					results.Reactions[rctn_name] = operdefs.ReactionResult{
 						Succeeded: false,
 						Skipped:   true,
 						Output:    "",
@@ -90,7 +91,7 @@ func ReactTo(rgln *language.Regulation, obsv_results map[string]language.Observa
 					}
 				} else {
 					if actn != nil {
-						actn.Args = language.ComputeArgs(actn.Args, *obsv)
+						actn.Args = operparse.ComputeArgs(actn.Args, *obsv)
 					}
 					reaction_result := runReaction(
 						obsv_result.Expected == false,
@@ -102,15 +103,15 @@ func ReactTo(rgln *language.Regulation, obsv_results map[string]language.Observa
 					results.Reactions[rctn_name] = reaction_result
 				}
 			} else {
-				actn = language.SelectAction(reaction.Action, rgln.Actions)
+				actn = operparse.SelectAction(reaction.Action, rgln.Actions)
 				if actn == nil {
-					actn = language.SelectImplementActionByName(reaction.Action, rgln.Implements)
+					actn = operparse.SelectImplementActionByName(reaction.Action, rgln.Implements)
 					if actn != nil {
-						actn.Args = language.ComputeArgs(actn.Args, *obsv)
+						actn.Args = operparse.ComputeArgs(actn.Args, *obsv)
 					}
 				}
 				if actn == nil {
-					results.Reactions[rctn_name] = language.ReactionResult{
+					results.Reactions[rctn_name] = operdefs.ReactionResult{
 						Succeeded: false,
 						Skipped:   true,
 						Output:    "",
@@ -145,7 +146,7 @@ func ReactTo(rgln *language.Regulation, obsv_results map[string]language.Observa
 						)
 						results.Reactions[rctn_name] = reaction_result
 					default:
-						results.Reactions[rctn_name] = language.ReactionResult{
+						results.Reactions[rctn_name] = operdefs.ReactionResult{
 							Succeeded: false,
 							Output:    "",
 							Message:   "Error checking condition, unknown Check type '" + reaction.Condition.Check + "'",
@@ -160,8 +161,8 @@ func ReactTo(rgln *language.Regulation, obsv_results map[string]language.Observa
 }
 
 func React(raw_data []byte) (string, *rgerror.RGerror) {
-	var data language.Regulation
-	parse_arr := language.ParseRegulation(raw_data, &data)
+	var data operdefs.Regulation
+	parse_arr := operparse.ParseRegulation(raw_data, &data)
 	if parse_arr != nil {
 		return "", parse_arr
 	}

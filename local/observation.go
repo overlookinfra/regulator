@@ -4,14 +4,15 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/puppetlabs/regulator/language"
 	"github.com/puppetlabs/regulator/localexec"
 	"github.com/puppetlabs/regulator/localfile"
+	"github.com/puppetlabs/regulator/operdefs"
+	"github.com/puppetlabs/regulator/operparse"
 	"github.com/puppetlabs/regulator/render"
 	"github.com/puppetlabs/regulator/rgerror"
 )
 
-func RunObservation(name string, obsv language.Observation, impls map[string]language.Implement) language.ObservationResult {
+func RunObservation(name string, obsv operdefs.Observation, impls map[string]operdefs.Implement) operdefs.ObservationResult {
 	entity := obsv.Entity
 	query := obsv.Query
 
@@ -20,10 +21,10 @@ func RunObservation(name string, obsv language.Observation, impls map[string]lan
 			impl_file := impl.Path
 			impl_script := impl.Script
 			executable := impl.Exe
-			args := language.ComputeArgs(impl.Observes.Args, obsv)
+			args := operparse.ComputeArgs(impl.Observes.Args, obsv)
 			output, logs, cmd_arr := localexec.BuildAndRunCommand(executable, impl_file, impl_script, args)
 			if cmd_arr != nil {
-				return language.ObservationResult{
+				return operdefs.ObservationResult{
 					Succeeded:   true,
 					Result:      "Error: " + strings.TrimSpace(cmd_arr.Message),
 					Expected:    false,
@@ -31,7 +32,7 @@ func RunObservation(name string, obsv language.Observation, impls map[string]lan
 					Observation: obsv,
 				}
 			} else {
-				result := language.ObservationResult{
+				result := operdefs.ObservationResult{
 					Succeeded:   true,
 					Result:      output,
 					Logs:        logs,
@@ -46,15 +47,15 @@ func RunObservation(name string, obsv language.Observation, impls map[string]lan
 			}
 		}
 	}
-	return language.ObservationResult{
+	return operdefs.ObservationResult{
 		Succeeded:   false,
 		Result:      "Error: No implement found for observation '" + name + "'",
 		Observation: obsv,
 	}
 }
 
-func RunAllObservations(obsvs map[string]language.Observation, impls map[string]language.Implement) language.ObservationResults {
-	results := language.ObservationResults{Observations: make(map[string]language.ObservationResult)}
+func RunAllObservations(obsvs map[string]operdefs.Observation, impls map[string]operdefs.Implement) operdefs.ObservationResults {
+	results := operdefs.ObservationResults{Observations: make(map[string]operdefs.ObservationResult)}
 	for obsv_name, obsv := range obsvs {
 		results.Observations[obsv_name] = RunObservation(obsv_name, obsv, impls)
 	}
@@ -65,8 +66,8 @@ func Observe(raw_data []byte) (string, *rgerror.RGerror) {
 	// No validators are required to run here because ParseRegulation
 	// will use ReadFileOrStdin which performs validation on
 	// maybe_file
-	var data language.Regulation
-	parse_rgerr := language.ParseRegulation(raw_data, &data)
+	var data operdefs.Regulation
+	parse_rgerr := operparse.ParseRegulation(raw_data, &data)
 	if parse_rgerr != nil {
 		return "", parse_rgerr
 	}
