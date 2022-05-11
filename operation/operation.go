@@ -1,4 +1,4 @@
-package operdefs
+package operation
 
 import (
 	"sort"

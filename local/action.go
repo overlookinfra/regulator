@@ -5,15 +5,15 @@ import (
 
 	"github.com/puppetlabs/regulator/localexec"
 	"github.com/puppetlabs/regulator/localfile"
-	"github.com/puppetlabs/regulator/operdefs"
+	"github.com/puppetlabs/regulator/operation"
 	"github.com/puppetlabs/regulator/operparse"
 	"github.com/puppetlabs/regulator/render"
 	"github.com/puppetlabs/regulator/rgerror"
 	"github.com/puppetlabs/regulator/validator"
 )
 
-func RunAction(actn operdefs.Action) operdefs.ActionResult {
-	result := operdefs.ActionResult{
+func RunAction(actn operation.Action) operation.ActionResult {
+	result := operation.ActionResult{
 		Action: actn,
 	}
 	output, logs, cmd_rgerr := localexec.BuildAndRunCommand(actn.Exe, actn.Path, actn.Script, actn.Args)
@@ -37,7 +37,7 @@ func Run(raw_data []byte, actn_name string) (string, *rgerror.RGerror) {
 	if rgerr != nil {
 		return "", rgerr
 	}
-	var data operdefs.Regulation
+	var data operation.Regulation
 	parse_rgerr := operparse.ParseRegulation(raw_data, &data)
 	if parse_rgerr != nil {
 		return "", parse_rgerr
@@ -51,7 +51,7 @@ func Run(raw_data []byte, actn_name string) (string, *rgerror.RGerror) {
 		}
 	}
 	result := RunAction(*actn)
-	raw_final_result := operdefs.ActionResults{Actions: make(map[string]operdefs.ActionResult)}
+	raw_final_result := operation.ActionResults{Actions: make(map[string]operation.ActionResult)}
 	raw_final_result.Actions[actn_name] = result
 	// The result for actions (for now) is an actionresults set with one action
 	// result in the actions field.

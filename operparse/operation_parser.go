@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/puppetlabs/regulator/defaultimpls"
-	"github.com/puppetlabs/regulator/operdefs"
+	"github.com/puppetlabs/regulator/operation"
 	"github.com/puppetlabs/regulator/rgerror"
 	"gopkg.in/yaml.v2"
 )
@@ -12,8 +12,8 @@ import (
 // Idempotent function for merging new data in to Regulation
 // struct. Can be used more than once to read data from multiple
 // sources
-func ParseRegulation(raw_data []byte, data *operdefs.Regulation) *rgerror.RGerror {
-	unmarshald_data := operdefs.Regulation{}
+func ParseRegulation(raw_data []byte, data *operation.Regulation) *rgerror.RGerror {
+	unmarshald_data := operation.Regulation{}
 	err := yaml.UnmarshalStrict(raw_data, &unmarshald_data)
 	if err != nil {
 		return &rgerror.RGerror{
@@ -32,19 +32,19 @@ func ParseRegulation(raw_data []byte, data *operdefs.Regulation) *rgerror.RGerro
 // Yeah this is big and ugly and could probably have helper functions,
 // but I don't want to do that much interface magic and pass enough
 // strings around to make the messages different and helpful.
-func ConcatRegulation(first *operdefs.Regulation, second *operdefs.Regulation) *rgerror.RGerror {
+func ConcatRegulation(first *operation.Regulation, second *operation.Regulation) *rgerror.RGerror {
 	var conflicts map[string]string = make(map[string]string)
 	if first.Observations == nil {
-		first.Observations = make(map[string]operdefs.Observation)
+		first.Observations = make(map[string]operation.Observation)
 	}
 	if first.Reactions == nil {
-		first.Reactions = make(map[string]operdefs.Reaction)
+		first.Reactions = make(map[string]operation.Reaction)
 	}
 	if first.Actions == nil {
-		first.Actions = make(map[string]operdefs.Action)
+		first.Actions = make(map[string]operation.Action)
 	}
 	if first.Implements == nil {
-		first.Implements = make(map[string]operdefs.Implement)
+		first.Implements = make(map[string]operation.Implement)
 	}
 	for obsv_name, obsv := range second.Observations {
 		if obsv.Empty() {
@@ -155,7 +155,7 @@ func ConcatRegulation(first *operdefs.Regulation, second *operdefs.Regulation) *
 
 // Replaces a special string in a list of arguments (used for observations and
 // reaction impls) with specific data from elsewhere
-func ComputeArgs(arg_spec []string, obsv operdefs.Observation) []string {
+func ComputeArgs(arg_spec []string, obsv operation.Observation) []string {
 	var args []string
 	for _, a := range arg_spec {
 		switch a {
@@ -168,30 +168,30 @@ func ComputeArgs(arg_spec []string, obsv operdefs.Observation) []string {
 	return args
 }
 
-func SelectAction(actn_name string, actns map[string]operdefs.Action) *operdefs.Action {
+func SelectAction(actn_name string, actns map[string]operation.Action) *operation.Action {
 	if selected_action, found := actns[actn_name]; found {
 		return &selected_action
 	}
 	return nil
 }
 
-func SelectObservation(obsv_name string, obsvs map[string]operdefs.Observation) *operdefs.Observation {
+func SelectObservation(obsv_name string, obsvs map[string]operation.Observation) *operation.Observation {
 	if selected_obs, found := obsvs[obsv_name]; found {
 		return &selected_obs
 	}
 	return nil
 }
 
-func SelectObservationResult(obsv_name string, obsv_results map[string]operdefs.ObservationResult) *operdefs.ObservationResult {
+func SelectObservationResult(obsv_name string, obsv_results map[string]operation.ObservationResult) *operation.ObservationResult {
 	if selected_obsv_result, found := obsv_results[obsv_name]; found {
 		return &selected_obsv_result
 	}
 	return nil
 }
 
-func SelectImplementActionByName(impl_name string, impls map[string]operdefs.Implement) *operdefs.Action {
+func SelectImplementActionByName(impl_name string, impls map[string]operation.Implement) *operation.Action {
 	if selected_impl, found := impls[impl_name]; found {
-		return &operdefs.Action{
+		return &operation.Action{
 			Path: selected_impl.Path,
 			Exe:  selected_impl.Exe,
 			Args: selected_impl.Reacts.Args,
@@ -200,14 +200,14 @@ func SelectImplementActionByName(impl_name string, impls map[string]operdefs.Imp
 	return nil
 }
 
-func SelectImplementActionForCorrection(obsv operdefs.Observation, obsv_result operdefs.ObservationResult, impls map[string]operdefs.Implement) (string, *operdefs.Action) {
+func SelectImplementActionForCorrection(obsv operation.Observation, obsv_result operation.ObservationResult, impls map[string]operation.Implement) (string, *operation.Action) {
 	for impl_name, impl := range impls {
 		if impl.Reacts.Corrects.Entity == obsv.Entity &&
 			impl.Reacts.Corrects.Query == obsv.Query &&
 			impl.Reacts.Corrects.Results_In == obsv.Expect {
 			for _, state := range impl.Reacts.Corrects.Starts_From {
 				if state == obsv_result.Result {
-					return impl_name, &operdefs.Action{
+					return impl_name, &operation.Action{
 						Path: impl.Path,
 						Exe:  impl.Exe,
 						Args: impl.Reacts.Args,

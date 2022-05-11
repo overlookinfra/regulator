@@ -1,6 +1,6 @@
 package defaultimpls
 
-import "github.com/puppetlabs/regulator/operdefs"
+import "github.com/puppetlabs/regulator/operation"
 
 var RUN_PUPPET_SCRIPT string = `
 #! /opt/puppetlabs/puppet/bin/ruby
@@ -175,10 +175,10 @@ end
 
 exit 0
 `
-var RUN_PUPPET operdefs.Implement = operdefs.Implement{
+var RUN_PUPPET operation.Implement = operation.Implement{
 	Script: RUN_PUPPET_SCRIPT,
 	Exe:    "/opt/puppetlabs/puppet/bin/ruby",
-	Observes: operdefs.ObservationImplement{
+	Observes: operation.ObservationImplement{
 		Entity: "puppet_code",
 		Query:  "enforced",
 		Args: []string{
@@ -186,8 +186,8 @@ var RUN_PUPPET operdefs.Implement = operdefs.Implement{
 			"instance",
 		},
 	},
-	Reacts: operdefs.ReactionImplement{
-		Corrects: operdefs.Correction{
+	Reacts: operation.ReactionImplement{
+		Corrects: operation.Correction{
 			Entity:      "puppet_code",
 			Query:       "enforced",
 			Starts_From: []string{"changes", "failures"},
@@ -200,6 +200,6 @@ var RUN_PUPPET operdefs.Implement = operdefs.Implement{
 	},
 }
 
-var DEFAULT_IMPLS map[string]operdefs.Implement = map[string]operdefs.Implement{
+var DEFAULT_IMPLS map[string]operation.Implement = map[string]operation.Implement{
 	"puppet_code": RUN_PUPPET,
 }

@@ -4,17 +4,17 @@ import (
 	"fmt"
 
 	"github.com/puppetlabs/regulator/localfile"
-	"github.com/puppetlabs/regulator/operdefs"
+	"github.com/puppetlabs/regulator/operation"
 	"github.com/puppetlabs/regulator/operparse"
 	"github.com/puppetlabs/regulator/render"
 	"github.com/puppetlabs/regulator/rgerror"
 )
 
-func runReaction(check_result bool, rctn operdefs.Reaction, actn_name string, actn *operdefs.Action, skipped_message string) operdefs.ReactionResult {
+func runReaction(check_result bool, rctn operation.Reaction, actn_name string, actn *operation.Action, skipped_message string) operation.ReactionResult {
 	if check_result {
 		action_result := RunAction(*actn)
 		if !action_result.Succeeded {
-			return operdefs.ReactionResult{
+			return operation.ReactionResult{
 				Succeeded: false,
 				Skipped:   false,
 				Output:    action_result.Output,
@@ -23,7 +23,7 @@ func runReaction(check_result bool, rctn operdefs.Reaction, actn_name string, ac
 				Reaction:  rctn,
 			}
 		} else {
-			return operdefs.ReactionResult{
+			return operation.ReactionResult{
 				Succeeded: true,
 				Skipped:   false,
 				Output:    action_result.Output,
@@ -33,7 +33,7 @@ func runReaction(check_result bool, rctn operdefs.Reaction, actn_name string, ac
 			}
 		}
 	} else {
-		return operdefs.ReactionResult{
+		return operation.ReactionResult{
 			Succeeded: true,
 			Skipped:   true,
 			Output:    "",
@@ -44,14 +44,14 @@ func runReaction(check_result bool, rctn operdefs.Reaction, actn_name string, ac
 	}
 }
 
-func ReactTo(rgln *operdefs.Regulation, obsv_results map[string]operdefs.ObservationResult) (*operdefs.ReactionResults, *rgerror.RGerror) {
-	results := operdefs.ReactionResults{Reactions: make(map[string]operdefs.ReactionResult), Observations: obsv_results}
+func ReactTo(rgln *operation.Regulation, obsv_results map[string]operation.ObservationResult) (*operation.ReactionResults, *rgerror.RGerror) {
+	results := operation.ReactionResults{Reactions: make(map[string]operation.ReactionResult), Observations: obsv_results}
 	for rctn_name, reaction := range rgln.Reactions {
 		obsv_name := reaction.Observation
 		obsv := operparse.SelectObservation(obsv_name, rgln.Observations)
 		obsv_result := operparse.SelectObservationResult(obsv_name, obsv_results)
 		if obsv == nil {
-			results.Reactions[rctn_name] = operdefs.ReactionResult{
+			results.Reactions[rctn_name] = operation.ReactionResult{
 				Succeeded: false,
 				Skipped:   true,
 				Output:    "",
@@ -62,7 +62,7 @@ func ReactTo(rgln *operdefs.Regulation, obsv_results map[string]operdefs.Observa
 			continue
 		}
 		if obsv_result.Succeeded == false {
-			results.Reactions[rctn_name] = operdefs.ReactionResult{
+			results.Reactions[rctn_name] = operation.ReactionResult{
 				Succeeded: false,
 				Skipped:   true,
 				Output:    obsv_result.Result,
@@ -71,11 +71,11 @@ func ReactTo(rgln *operdefs.Regulation, obsv_results map[string]operdefs.Observa
 				Reaction:  reaction,
 			}
 		} else {
-			var actn *operdefs.Action = nil
+			var actn *operation.Action = nil
 			if reaction.Action == "correction" {
 				actn_name, actn := operparse.SelectImplementActionForCorrection(*obsv, *obsv_result, rgln.Implements)
 				if actn == nil && obsv_result.Expected == false {
-					results.Reactions[rctn_name] = operdefs.ReactionResult{
+					results.Reactions[rctn_name] = operation.ReactionResult{
 						Succeeded: false,
 						Skipped:   true,
 						Output:    "",
@@ -111,7 +111,7 @@ func ReactTo(rgln *operdefs.Regulation, obsv_results map[string]operdefs.Observa
 					}
 				}
 				if actn == nil {
-					results.Reactions[rctn_name] = operdefs.ReactionResult{
+					results.Reactions[rctn_name] = operation.ReactionResult{
 						Succeeded: false,
 						Skipped:   true,
 						Output:    "",
@@ -146,7 +146,7 @@ func ReactTo(rgln *operdefs.Regulation, obsv_results map[string]operdefs.Observa
 						)
 						results.Reactions[rctn_name] = reaction_result
 					default:
-						results.Reactions[rctn_name] = operdefs.ReactionResult{
+						results.Reactions[rctn_name] = operation.ReactionResult{
 							Succeeded: false,
 							Output:    "",
 							Message:   "Error checking condition, unknown Check type '" + reaction.Condition.Check + "'",
@@ -161,7 +161,7 @@ func ReactTo(rgln *operdefs.Regulation, obsv_results map[string]operdefs.Observa
 }
 
 func React(raw_data []byte) (string, *rgerror.RGerror) {
-	var data operdefs.Regulation
+	var data operation.Regulation
 	parse_arr := operparse.ParseRegulation(raw_data, &data)
 	if parse_arr != nil {
 		return "", parse_arr
