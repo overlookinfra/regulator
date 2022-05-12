@@ -25,7 +25,7 @@ func RunObservation(name string, obsv operation.Observation, impls map[string]op
 			output, logs, cmd_arr := localexec.BuildAndRunCommand(executable, impl_file, impl_script, args)
 			if cmd_arr != nil {
 				return operation.ObservationResult{
-					Succeeded:   true,
+					Succeeded:   false,
 					Result:      "Error: " + strings.TrimSpace(cmd_arr.Message),
 					Expected:    false,
 					Logs:        logs,
