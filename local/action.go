@@ -37,8 +37,8 @@ func Run(raw_data []byte, actn_name string) (string, *rgerror.RGerror) {
 	if rgerr != nil {
 		return "", rgerr
 	}
-	var data operation.Regulation
-	parse_rgerr := operparse.ParseRegulation(raw_data, &data)
+	var data operation.Operations
+	parse_rgerr := operparse.ParseOperations(raw_data, &data)
 	if parse_rgerr != nil {
 		return "", parse_rgerr
 	}

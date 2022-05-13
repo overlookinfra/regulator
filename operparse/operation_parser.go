@@ -9,11 +9,11 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// Idempotent function for merging new data in to Regulation
+// Idempotent function for merging new data in to Operations
 // struct. Can be used more than once to read data from multiple
 // sources
-func ParseRegulation(raw_data []byte, data *operation.Regulation) *rgerror.RGerror {
-	unmarshald_data := operation.Regulation{}
+func ParseOperations(raw_data []byte, data *operation.Operations) *rgerror.RGerror {
+	unmarshald_data := operation.Operations{}
 	err := yaml.UnmarshalStrict(raw_data, &unmarshald_data)
 	if err != nil {
 		return &rgerror.RGerror{
@@ -22,7 +22,7 @@ func ParseRegulation(raw_data []byte, data *operation.Regulation) *rgerror.RGerr
 			Origin:  err,
 		}
 	}
-	rgerr := ConcatRegulation(data, &unmarshald_data)
+	rgerr := ConcatOperations(data, &unmarshald_data)
 	if rgerr != nil {
 		return rgerr
 	}
@@ -32,7 +32,7 @@ func ParseRegulation(raw_data []byte, data *operation.Regulation) *rgerror.RGerr
 // Yeah this is big and ugly and could probably have helper functions,
 // but I don't want to do that much interface magic and pass enough
 // strings around to make the messages different and helpful.
-func ConcatRegulation(first *operation.Regulation, second *operation.Regulation) *rgerror.RGerror {
+func ConcatOperations(first *operation.Operations, second *operation.Operations) *rgerror.RGerror {
 	var conflicts map[string]string = make(map[string]string)
 	if first.Observations == nil {
 		first.Observations = make(map[string]operation.Observation)
@@ -118,7 +118,7 @@ func ConcatRegulation(first *operation.Regulation, second *operation.Regulation)
 		}
 		first.Actions[actn_name] = actn
 	}
-	// We have to edit the impls in the second regulation to ensure
+	// We have to edit the impls in the second operations to ensure
 	// that the default impls don't create conflicts
 	impls_to_add := second.Implements
 	// Ensure that the default impls are added first so that
@@ -132,7 +132,7 @@ func ConcatRegulation(first *operation.Regulation, second *operation.Regulation)
 			conflicts[key] = default_impl_name
 		}
 		// Remove all the default impls from the impls that are to be
-		// added to the first regulation.
+		// added to the first operations.
 		delete(impls_to_add, default_impl_name)
 	}
 	for impl_name, impl := range impls_to_add {

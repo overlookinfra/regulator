@@ -120,7 +120,7 @@ func (actn Action) Empty() bool {
 // ---------------------------------------------------------------
 type Condition struct {
 	Check string      `yaml:"check" json:"check"`
-	Value interface{} `yaml:"value" json:"check"`
+	Value interface{} `yaml:"value" json:"value"`
 }
 
 type Reaction struct {
@@ -273,7 +273,7 @@ func (impl Implement) Empty() bool {
 
 // Everything together
 // ---------------------------------------------------------------
-type Regulation struct {
+type Operations struct {
 	Reactions    map[string]Reaction    `yaml:"reactions,omitempty" json:"reactions,omitempty"`
 	Observations map[string]Observation `yaml:"observations,omitempty" json:"observations,omitempty"`
 	Implements   map[string]Implement   `yaml:"implements,omitempty" json:"implements,omitempty"`

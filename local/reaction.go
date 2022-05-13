@@ -44,7 +44,7 @@ func runReaction(check_result bool, rctn operation.Reaction, actn_name string, a
 	}
 }
 
-func ReactTo(rgln *operation.Regulation, obsv_results map[string]operation.ObservationResult) (*operation.ReactionResults, *rgerror.RGerror) {
+func ReactTo(rgln *operation.Operations, obsv_results map[string]operation.ObservationResult) (*operation.ReactionResults, *rgerror.RGerror) {
 	results := operation.ReactionResults{Reactions: make(map[string]operation.ReactionResult), Observations: obsv_results}
 	for rctn_name, reaction := range rgln.Reactions {
 		obsv_name := reaction.Observation
@@ -161,8 +161,8 @@ func ReactTo(rgln *operation.Regulation, obsv_results map[string]operation.Obser
 }
 
 func React(raw_data []byte) (string, *rgerror.RGerror) {
-	var data operation.Regulation
-	parse_arr := operparse.ParseRegulation(raw_data, &data)
+	var data operation.Operations
+	parse_arr := operparse.ParseOperations(raw_data, &data)
 	if parse_arr != nil {
 		return "", parse_arr
 	}

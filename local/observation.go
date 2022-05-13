@@ -63,11 +63,11 @@ func RunAllObservations(obsvs map[string]operation.Observation, impls map[string
 }
 
 func Observe(raw_data []byte) (string, *rgerror.RGerror) {
-	// No validators are required to run here because ParseRegulation
+	// No validators are required to run here because ParseOperations
 	// will use ReadFileOrStdin which performs validation on
 	// maybe_file
-	var data operation.Regulation
-	parse_rgerr := operparse.ParseRegulation(raw_data, &data)
+	var data operation.Operations
+	parse_rgerr := operparse.ParseOperations(raw_data, &data)
 	if parse_rgerr != nil {
 		return "", parse_rgerr
 	}
