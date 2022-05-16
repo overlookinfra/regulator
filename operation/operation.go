@@ -30,15 +30,18 @@ type Observation struct {
 }
 
 type ObservationResult struct {
-	Succeeded   bool        `json:"succeeded"`
-	Result      string      `json:"result"`
-	Expected    bool        `json:"expected"`
-	Logs        string      `json:"logs"`
-	Observation Observation `json:"observation"`
+	Succeeded   bool        `yaml:"succeeded" json:"succeeded"`
+	Result      string      `yaml:"result" json:"result"`
+	Expected    bool        `yaml:"expected" json:"expected"`
+	Logs        string      `yaml:"logs" json:"logs"`
+	Observation Observation `yaml:"observation" json:"observation"`
 }
 
 type ObservationResults struct {
-	Observations map[string]ObservationResult `json:"observations"`
+	Observations            map[string]ObservationResult `yaml:"observations" json:"observations"`
+	Total_Observations      int                          `yaml:"total_observations" json:"total_observations"`
+	Failed_Observations     int                          `yaml:"failed_observations" json:"failed_observations"`
+	Unexpected_Observations int                          `yaml:"unexpected_observations" json:"unexpected_observations"`
 }
 
 // Observations can only conflict if
@@ -89,10 +92,10 @@ type Action struct {
 }
 
 type ActionResult struct {
-	Succeeded bool   `json:"succeeded"`
-	Output    string `json:"output"`
-	Logs      string `json:"logs"`
-	Action    Action `json:"action"`
+	Succeeded bool   `yaml:"succeeded" json:"succeeded"`
+	Output    string `yaml:"output" json:"output"`
+	Logs      string `yaml:"logs" json:"logs"`
+	Action    Action `yaml:"action" json:"action"`
 }
 
 type ActionResults struct {
@@ -130,17 +133,23 @@ type Reaction struct {
 }
 
 type ReactionResult struct {
-	Succeeded bool     `json:"succeeded"`
-	Skipped   bool     `json:"skipped"`
-	Output    string   `json:"output"`
-	Logs      string   `json:"logs"`
-	Message   string   `json:"message"`
-	Reaction  Reaction `json:"reaction"`
+	Succeeded bool     `yaml:"succeeded" json:"succeeded"`
+	Skipped   bool     `yaml:"skipped" json:"skipped"`
+	Output    string   `yaml:"output" json:"output"`
+	Logs      string   `yaml:"logs" json:"logs"`
+	Message   string   `yaml:"message" json:"message"`
+	Reaction  Reaction `yaml:"reaction" json:"reaction"`
 }
 
 type ReactionResults struct {
-	Reactions    map[string]ReactionResult    `json:"reactions"`
-	Observations map[string]ObservationResult `json:"observations"`
+	Reactions               map[string]ReactionResult    `yaml:"reactions" json:"reactions"`
+	Observations            map[string]ObservationResult `yaml:"observations" json:"observations"`
+	Total_Observations      int                          `yaml:"total_observations" json:"total_observations"`
+	Failed_Observations     int                          `yaml:"failed_observations" json:"failed_observations"`
+	Unexpected_Observations int                          `yaml:"unexpected_observations" json:"unexpected_observations"`
+	Total_Reactions         int                          `yaml:"total_reactions" json:"total_reactions"`
+	Failed_Reactions        int                          `yaml:"failed_reactions" json:"failed_reactions"`
+	Skipped_Reactions       int                          `yaml:"skipped_reactions" json:"skipped_reactions"`
 }
 
 func (rctn Reaction) HashKeys() []string {

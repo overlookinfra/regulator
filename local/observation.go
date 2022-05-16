@@ -57,7 +57,15 @@ func RunObservation(name string, obsv operation.Observation, impls map[string]op
 func RunAllObservations(obsvs map[string]operation.Observation, impls map[string]operation.Implement) operation.ObservationResults {
 	results := operation.ObservationResults{Observations: make(map[string]operation.ObservationResult)}
 	for obsv_name, obsv := range obsvs {
-		results.Observations[obsv_name] = RunObservation(obsv_name, obsv, impls)
+		this_result := RunObservation(obsv_name, obsv, impls)
+		results.Observations[obsv_name] = this_result
+		results.Total_Observations++
+		if this_result.Succeeded == false {
+			results.Failed_Observations++
+		}
+		if this_result.Expected == false {
+			results.Unexpected_Observations++
+		}
 	}
 	return results
 }
