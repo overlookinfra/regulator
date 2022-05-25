@@ -11,8 +11,7 @@ import (
 	"github.com/puppetlabs/regulator/sanitize"
 )
 
-func ExecReadOutput(executable string, file string, params []string) (string, string, *rgerror.RGerror) {
-	args := append([]string{file}, params...)
+func ExecReadOutput(executable string, args []string) (string, string, *rgerror.RGerror) {
 	shell_command := exec.Command(executable, args...)
 	shell_command.Env = os.Environ()
 	var stdout, stderr bytes.Buffer
@@ -31,7 +30,7 @@ func ExecReadOutput(executable string, file string, params []string) (string, st
 	return output, logs, nil
 }
 
-func ExecScriptReadOutput(executable string, script string, params []string) (string, string, *rgerror.RGerror) {
+func ExecScriptReadOutput(executable string, script string, args []string) (string, string, *rgerror.RGerror) {
 	f, err := os.CreateTemp("", "regulator_script")
 	if err != nil {
 		return "", "", &rgerror.RGerror{
@@ -43,7 +42,8 @@ func ExecScriptReadOutput(executable string, script string, params []string) (st
 	filename := f.Name()
 	defer os.Remove(filename) // clean up
 	localfile.OverwriteFile(filename, []byte(script))
-	return ExecReadOutput(executable, filename, params)
+	final_args := append([]string{filename}, args...)
+	return ExecReadOutput(executable, final_args)
 }
 
 func BuildAndRunCommand(executable string, file string, script string, args []string) (string, string, *rgerror.RGerror) {
@@ -52,7 +52,8 @@ func BuildAndRunCommand(executable string, file string, script string, args []st
 	if file == "" {
 		output, logs, airr = ExecScriptReadOutput(executable, script, args)
 	} else {
-		output, logs, airr = ExecReadOutput(executable, file, args)
+		final_args := append([]string{file}, args...)
+		output, logs, airr = ExecReadOutput(executable, final_args)
 	}
 	if airr != nil {
 		return output, logs, airr
