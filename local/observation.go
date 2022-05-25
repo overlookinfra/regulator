@@ -22,11 +22,11 @@ func RunObservation(name string, obsv operation.Observation, impls map[string]op
 			impl_script := impl.Script
 			executable := impl.Exe
 			args := operparse.ComputeArgs(impl.Observes.Args, obsv)
-			output, logs, cmd_arr := localexec.BuildAndRunCommand(executable, impl_file, impl_script, args)
-			if cmd_arr != nil {
+			output, logs, cmd_rgerr := localexec.BuildAndRunCommand(executable, impl_file, impl_script, args)
+			if cmd_rgerr != nil {
 				return operation.ObservationResult{
 					Succeeded:   false,
-					Result:      "Error: " + strings.TrimSpace(cmd_arr.Message),
+					Result:      "Error: " + strings.TrimSpace(cmd_rgerr.Message),
 					Expected:    false,
 					Logs:        logs,
 					Observation: obsv,

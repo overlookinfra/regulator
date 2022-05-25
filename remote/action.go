@@ -41,13 +41,13 @@ func Run(raw_data []byte, actn_name string, username string, target string, port
 }
 
 func CLIRun(maybe_file string, actn_name string, username string, target string, port string) *rgerror.RGerror {
-	raw_data, arr := localfile.ReadFileOrStdin(maybe_file)
-	if arr != nil {
-		return arr
+	raw_data, rgerr := localfile.ReadFileOrStdin(maybe_file)
+	if rgerr != nil {
+		return rgerr
 	}
-	sout, airr := Run(raw_data, actn_name, username, target, port)
-	if airr != nil {
-		return airr
+	sout, rgerr := Run(raw_data, actn_name, username, target, port)
+	if rgerr != nil {
+		return rgerr
 	}
 	fmt.Printf("%s", sout)
 	return nil

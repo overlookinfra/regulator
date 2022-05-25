@@ -2,94 +2,23 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"os"
-	"strings"
 
+	"github.com/puppetlabs/regulator/cli"
 	"github.com/puppetlabs/regulator/local"
 	"github.com/puppetlabs/regulator/localfile"
 	"github.com/puppetlabs/regulator/remote"
-	"github.com/puppetlabs/regulator/rgerror"
-	"github.com/puppetlabs/regulator/version"
 )
-
-type CLICommand struct {
-	Verb        string
-	Noun        string
-	ExecutionFn func()
-}
-
-// shouldHaveArgs does two things:
-// * validate that the number of args that aren't flags have been provided (i.e. the number of strings
-//    after "regulator" that aren't flags)
-// * parse the remaining flags
-//
-// If the wrong number of args is passed it prints helpful usage
-func shouldHaveArgs(num_args int, usage string, description string, flagset *flag.FlagSet) {
-	real_args := num_args + 1
-	passed_fs := flagset != nil
-	for index, arg := range os.Args {
-		if arg == "-h" {
-			fmt.Fprintf(os.Stderr, "Usage:\n  %s\n\nDescription:\n  %s\n\n", usage, description)
-			if passed_fs {
-				fmt.Fprintf(os.Stderr, "Available flags:\n")
-				flagset.PrintDefaults()
-			}
-			os.Exit(0)
-		}
-		// None of the arguments required by the command should start with dashes, if they
-		// do assume an arg is missing and this is a flag
-		if index <= num_args && strings.HasPrefix(arg, "-") {
-			fmt.Fprintf(os.Stderr, "Error running command:\n\nInvalid input, not enough arguments.\n\nUsage:\n  %s\n\nDescription:\n  %s\n\n", usage, description)
-			if passed_fs {
-				fmt.Fprintf(os.Stderr, "Available flags:\n")
-				flagset.PrintDefaults()
-			}
-			os.Exit(1)
-		}
-	}
-	if len(os.Args) < real_args {
-		fmt.Fprintf(os.Stderr, "Error running command:\n\nInvalid input, not enough arguments.\n\nUsage:\n  %s\n\nDescription:\n  %s\n\n", usage, description)
-		if passed_fs {
-			fmt.Fprintf(os.Stderr, "Available flags:\n")
-			flagset.PrintDefaults()
-		}
-		os.Exit(1)
-	} else if len(os.Args) > real_args && passed_fs {
-		flagset.Parse(os.Args[real_args:])
-	}
-}
-
-// handleCommandRGerror catches InvalidInput rgerror.RGerrors and prints usage
-// if that was the error thrown. IF a different type of rgerror.RGerror is thrown
-// it just prints the error.
-//
-// If the command succeeds handleCommandRGerror exits the whole go process
-// with code 0
-func handleCommandRGerror(airr *rgerror.RGerror, usage string, description string, flagset *flag.FlagSet) {
-	if airr != nil {
-		if airr.Kind == rgerror.InvalidInput {
-			fmt.Fprintf(os.Stderr, "%s\nUsage:\n  %s\n\nDescription:\n  %s\n\n", airr, usage, description)
-			if flagset != nil {
-				flagset.PrintDefaults()
-			}
-		} else {
-			fmt.Fprintf(os.Stderr, "Error running command:\n\n%s\n", airr)
-		}
-		os.Exit(1)
-	}
-	os.Exit(0)
-}
 
 func main() {
 	// Use flagsets from the https://pkg.go.dev/flag package
 	// to define CLI flags
 	//
 	// None of the commands below should call .Parse on any
-	// flagsets directly. shouldHaveArgs() will call .Parse
+	// flagsets directly. cli.ShouldHaveArgs() will call .Parse
 	// on the flagset if it is passed one.
 	//
-	// Things need to be parsed inside shouldHaveArgs so that
+	// Things need to be parsed inside cli.ShouldHaveArgs so that
 	// the flag package can ignore any required commands
 	// before parsing
 	local_flag_set := flag.NewFlagSet("local_options", flag.ExitOnError)
@@ -110,17 +39,17 @@ func main() {
 	// https://docs.microsoft.com/en-us/powershell/scripting/developer/cmdlet/approved-verbs-for-windows-powershell-commands?view=powershell-7.2
 	//
 	// Also, try to keep these in alphabetical order. The list is already long enough
-	command_list := []CLICommand{
+	command_list := []cli.Command{
 		{"observe", "local",
 			func() {
 				usage := "regulator observe local [FLAGS]"
 				description := "Run observation code on the local system and print out the resulting observations"
-				shouldHaveArgs(2, usage, description, local_flag_set)
+				cli.ShouldHaveArgs(2, usage, description, local_flag_set)
 				input_file, rgerr := localfile.ChooseFileOrStdin(*local_input_file, *local_use_stdin)
 				if rgerr != nil {
-					handleCommandRGerror(rgerr, usage, description, local_flag_set)
+					cli.HandleCommandRGerror(rgerr, usage, description, local_flag_set)
 				}
-				handleCommandRGerror(
+				cli.HandleCommandRGerror(
 					local.CLIObserve(input_file),
 					usage,
 					description,
@@ -132,12 +61,12 @@ func main() {
 			func() {
 				usage := "regulator observe remote [TARGET] [FLAGS]"
 				description := "Run observation on a target"
-				shouldHaveArgs(3, usage, description, remote_flag_set)
+				cli.ShouldHaveArgs(3, usage, description, remote_flag_set)
 				input_file, rgerr := localfile.ChooseFileOrStdin(*remote_input_file, *remote_use_stdin)
 				if rgerr != nil {
-					handleCommandRGerror(rgerr, usage, description, remote_flag_set)
+					cli.HandleCommandRGerror(rgerr, usage, description, remote_flag_set)
 				}
-				handleCommandRGerror(
+				cli.HandleCommandRGerror(
 					remote.CLIObserve(input_file, *username, os.Args[3], *port),
 					usage,
 					description,
@@ -149,12 +78,12 @@ func main() {
 			func() {
 				usage := "regulator react local [FLAGS]"
 				description := "React to an observation on the local system"
-				shouldHaveArgs(2, usage, description, local_flag_set)
+				cli.ShouldHaveArgs(2, usage, description, local_flag_set)
 				input_file, rgerr := localfile.ChooseFileOrStdin(*local_input_file, *local_use_stdin)
 				if rgerr != nil {
-					handleCommandRGerror(rgerr, usage, description, local_flag_set)
+					cli.HandleCommandRGerror(rgerr, usage, description, local_flag_set)
 				}
-				handleCommandRGerror(
+				cli.HandleCommandRGerror(
 					local.CLIReact(input_file),
 					usage,
 					description,
@@ -166,12 +95,12 @@ func main() {
 			func() {
 				usage := "regulator react remote [TARGET] [FLAGS]"
 				description := "React to an observation on a target"
-				shouldHaveArgs(3, usage, description, remote_flag_set)
+				cli.ShouldHaveArgs(3, usage, description, remote_flag_set)
 				input_file, rgerr := localfile.ChooseFileOrStdin(*remote_input_file, *remote_use_stdin)
 				if rgerr != nil {
-					handleCommandRGerror(rgerr, usage, description, remote_flag_set)
+					cli.HandleCommandRGerror(rgerr, usage, description, remote_flag_set)
 				}
-				handleCommandRGerror(
+				cli.HandleCommandRGerror(
 					remote.CLIReact(input_file, *username, os.Args[3], *port),
 					usage,
 					description,
@@ -183,12 +112,12 @@ func main() {
 			func() {
 				usage := "regulator run local [ACTION NAME] [FLAGS]"
 				description := "Run an action on the local system"
-				shouldHaveArgs(3, usage, description, local_flag_set)
+				cli.ShouldHaveArgs(3, usage, description, local_flag_set)
 				input_file, rgerr := localfile.ChooseFileOrStdin(*local_input_file, *local_use_stdin)
 				if rgerr != nil {
-					handleCommandRGerror(rgerr, usage, description, local_flag_set)
+					cli.HandleCommandRGerror(rgerr, usage, description, local_flag_set)
 				}
-				handleCommandRGerror(
+				cli.HandleCommandRGerror(
 					local.CLIRun(input_file, os.Args[3]),
 					usage,
 					description,
@@ -200,12 +129,12 @@ func main() {
 			func() {
 				usage := "regulator run remote [ACTION NAME] [TARGET] [FLAGS]"
 				description := "Run actions on a target"
-				shouldHaveArgs(4, usage, description, remote_flag_set)
+				cli.ShouldHaveArgs(4, usage, description, remote_flag_set)
 				input_file, rgerr := localfile.ChooseFileOrStdin(*remote_input_file, *remote_use_stdin)
 				if rgerr != nil {
-					handleCommandRGerror(rgerr, usage, description, remote_flag_set)
+					cli.HandleCommandRGerror(rgerr, usage, description, remote_flag_set)
 				}
-				handleCommandRGerror(
+				cli.HandleCommandRGerror(
 					remote.CLIRun(input_file, os.Args[3], *username, os.Args[4], *port),
 					usage,
 					description,
@@ -217,8 +146,8 @@ func main() {
 			func() {
 				usage := "regulator setup remote [TARGET] [FLAGS]"
 				description := "Run actions on a target"
-				shouldHaveArgs(3, usage, description, setup_flag_set)
-				handleCommandRGerror(
+				cli.ShouldHaveArgs(3, usage, description, setup_flag_set)
+				cli.HandleCommandRGerror(
 					remote.CLISetup(*setup_username, os.Args[3], *setup_port),
 					usage,
 					description,
@@ -228,31 +157,5 @@ func main() {
 		},
 	}
 
-	if len(os.Args) > 2 {
-		for _, command := range command_list {
-			if os.Args[1] == command.Verb && os.Args[2] == command.Noun {
-				command.ExecutionFn()
-			}
-		}
-	}
-
-	if len(os.Args) > 1 {
-		switch os.Args[1] {
-		case "--version":
-			fmt.Fprintf(os.Stdout, "%s\n", version.VERSION)
-			os.Exit(0)
-		case "-h":
-			// do nothing, it will print the usage message below
-		default:
-			// If we've arrived here, that means the args passed don't match an existing command
-			// --version or -h
-			fmt.Printf("Unknown regulator command \"%s\"\n\n", strings.Join(os.Args, " "))
-		}
-	}
-
-	fmt.Printf("Usage:\n  regulator [COMMAND] [OBJECT] [ARGUMENTS] [FLAGS]\n\nAvailable commands:\n")
-	for _, command := range command_list {
-		fmt.Printf("    %s %s\n", command.Verb, command.Noun)
-	}
-	os.Exit(1)
+	cli.RunCommand("regulator", command_list)
 }

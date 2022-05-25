@@ -48,15 +48,15 @@ func ExecScriptReadOutput(executable string, script string, args []string) (stri
 
 func BuildAndRunCommand(executable string, file string, script string, args []string) (string, string, *rgerror.RGerror) {
 	var output, logs string
-	var airr *rgerror.RGerror
+	var rgerr *rgerror.RGerror
 	if file == "" {
-		output, logs, airr = ExecScriptReadOutput(executable, script, args)
+		output, logs, rgerr = ExecScriptReadOutput(executable, script, args)
 	} else {
 		final_args := append([]string{file}, args...)
-		output, logs, airr = ExecReadOutput(executable, final_args)
+		output, logs, rgerr = ExecReadOutput(executable, final_args)
 	}
-	if airr != nil {
-		return output, logs, airr
+	if rgerr != nil {
+		return output, logs, rgerr
 	}
 
 	return output, logs, nil

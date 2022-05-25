@@ -33,24 +33,24 @@ func Setup(username string, target string, port string) (string, string, *rgerro
 		chmod 755 $HOME/.regulator/bin/regulator 1>&2`,
 		version.VERSION,
 	)
-	sout, serr, ec, arr := connection.RunSSHCommand(command, "", username, target, port)
-	if arr != nil {
+	sout, serr, ec, rgerr := connection.RunSSHCommand(command, "", username, target, port)
+	if rgerr != nil {
 		return "", "", &rgerror.RGerror{
 			Kind: rgerror.RemoteExecError,
 			Message: fmt.Sprintf("regulator client on remote target returned non-zero exit code %d\n\nStdout:\n%s\nStderr:\n%s\n",
 				ec,
 				sout,
 				serr),
-			Origin: arr.Origin,
+			Origin: rgerr.Origin,
 		}
 	}
 	return sout, serr, nil
 }
 
 func CLISetup(username string, target string, port string) *rgerror.RGerror {
-	_, serr, airr := Setup(username, target, port)
-	if airr != nil {
-		return airr
+	_, serr, rgerr := Setup(username, target, port)
+	if rgerr != nil {
+		return rgerr
 	}
 	output := make(map[string]interface{})
 	output["ok"] = true

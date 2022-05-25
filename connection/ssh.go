@@ -47,9 +47,9 @@ func openConnectionWithAgent(username string, target string, port string) (*ssh.
 }
 
 func RunSSHCommand(command string, send_stdin string, username string, target string, port string) (string, string, int, *rgerror.RGerror) {
-	client, arr := openConnectionWithAgent(username, target, port)
-	if arr != nil {
-		return "", "", -1, arr
+	client, rgerr := openConnectionWithAgent(username, target, port)
+	if rgerr != nil {
+		return "", "", -1, rgerr
 	}
 	defer client.Close()
 

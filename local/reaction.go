@@ -177,9 +177,9 @@ func ReactTo(rgln *operation.Operations, all_obsv_results operation.ObservationR
 
 func React(raw_data []byte) (string, *rgerror.RGerror) {
 	var data operation.Operations
-	parse_arr := operparse.ParseOperations(raw_data, &data)
-	if parse_arr != nil {
-		return "", parse_arr
+	parse_rgerr := operparse.ParseOperations(raw_data, &data)
+	if parse_rgerr != nil {
+		return "", parse_rgerr
 	}
 
 	obsv_results := RunAllObservations(data.Observations, data.Implements)

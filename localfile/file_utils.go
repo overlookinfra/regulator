@@ -51,13 +51,13 @@ func ChooseFileOrStdin(specfile string, use_stdin bool) (string, *rgerror.RGerro
 
 func ReadFileOrStdin(maybe_file string) ([]byte, *rgerror.RGerror) {
 	var raw_data []byte
-	var airr *rgerror.RGerror
+	var rgerr *rgerror.RGerror
 	if maybe_file == STDIN_IDENTIFIER {
 		raw_data = []byte(readFromStdin())
 	} else {
-		raw_data, airr = ReadFileInChunks(maybe_file)
-		if airr != nil {
-			return nil, airr
+		raw_data, rgerr = ReadFileInChunks(maybe_file)
+		if rgerr != nil {
+			return nil, rgerr
 		}
 	}
 	return raw_data, nil
