@@ -1,4 +1,5 @@
-REGULATOR_GO_PACKAGES=. ./connection ./language ./local ./localexec ./localfile ./remote ./render ./rgerror ./sanitize ./validator ./version
+GO_PACKAGES=. ./connection ./local ./localexec ./localfile ./operation ./operparse ./remote ./render ./rgerror ./sanitize ./validator ./version
+GO_MODULE_NAME=github.com/puppetlabs/regulator
 
 # Make the build dir, and remove anything already inside it
 setup:
@@ -8,11 +9,11 @@ setup:
 # Actually build the thing
 build: setup
 	go mod tidy
-	go build -o output/ github.com/puppetlabs/regulator
+	go build -o output/ $(GO_MODULE_NAME)
 
 install:
 	go mod tidy
-	go install github.com/puppetlabs/regulator
+	go install $(GO_MODULE_NAME)
 
 # Build it before publishing to make sure this publication won't be broken
 publish: build
