@@ -1,0 +1,21 @@
+implements:
+  running instance count:
+    path: run_puppet_code_impl.rb
+    exe: /opt/puppetlabs/puppet/bin/ruby
+    observes:
+      entity: puppet_code
+      query: enforced
+      args:
+        - observe
+        - __obsv_instance__
+    reacts:
+      corrects:
+        entity: puppet_code
+        query: enforced
+        starts_from:
+          - changes
+          - failures
+        results_in: conformed
+      args:
+        - run
+        - __obsv_instance__

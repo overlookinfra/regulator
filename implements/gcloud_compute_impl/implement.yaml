@@ -1,0 +1,45 @@
+implements:
+  running instance count:
+    path: gcloud_compute_impl
+    exe: bash
+    observes:
+      entity: gcloud_running_instances
+      query: count
+      args:
+        - count
+        - instances
+        - RUNNING
+        - __obsv_instance__
+  terminated instance count:
+    path: gcloud_compute_impl
+    exe: bash
+    observes:
+      entity: gcloud_terminated_instances
+      query: count
+      args:
+        - count
+        - instances
+        - TERMINATED
+        - __obsv_instance__
+  running instance name list:
+    path: gcloud_compute_impl
+    exe: bash
+    observes:
+      entity: gcloud_running_instances
+      query: names
+      args:
+        - list
+        - instances
+        - RUNNING
+        - __obsv_instance__
+  terminated instance name list:
+    path: gcloud_compute_impl
+    exe: bash
+    observes:
+      entity: gcloud_terminated_instances
+      query: names
+      args:
+        - list
+        - instances
+        - TERMINATED
+        - __obsv_instance__

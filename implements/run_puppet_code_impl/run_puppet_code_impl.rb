@@ -1,8 +1,3 @@
-package defaultimpls
-
-import "github.com/puppetlabs/regulator/operation"
-
-var RUN_PUPPET_SCRIPT string = `
 #! /opt/puppetlabs/puppet/bin/ruby
 # frozen_string_literal: true
 require 'fileutils'
@@ -174,32 +169,3 @@ ensure
 end
 
 exit 0
-`
-var RUN_PUPPET operation.Implement = operation.Implement{
-	Script: RUN_PUPPET_SCRIPT,
-	Exe:    "/opt/puppetlabs/puppet/bin/ruby",
-	Observes: operation.ObservationImplement{
-		Entity: "puppet_code",
-		Query:  "enforced",
-		Args: []string{
-			"observe",
-			"instance",
-		},
-	},
-	Reacts: operation.ReactionImplement{
-		Corrects: operation.Correction{
-			Entity:      "puppet_code",
-			Query:       "enforced",
-			Starts_From: []string{"changes", "failures"},
-			Results_In:  "conformed",
-		},
-		Args: []string{
-			"run",
-			"instance",
-		},
-	},
-}
-
-var DEFAULT_IMPLS map[string]operation.Implement = map[string]operation.Implement{
-	"puppet_code": RUN_PUPPET,
-}

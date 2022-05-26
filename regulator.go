@@ -40,8 +40,10 @@ func main() {
 	//
 	// Also, try to keep these in alphabetical order. The list is already long enough
 	command_list := []cli.Command{
-		{"observe", "local",
-			func() {
+		{
+			Verb: "observe",
+			Noun: "local",
+			ExecutionFn: func() {
 				usage := "regulator observe local [FLAGS]"
 				description := "Run observation code on the local system and print out the resulting observations"
 				cli.ShouldHaveArgs(2, usage, description, local_flag_set)
@@ -57,8 +59,10 @@ func main() {
 				)
 			},
 		},
-		{"observe", "remote",
-			func() {
+		{
+			Verb: "observe",
+			Noun: "remote",
+			ExecutionFn: func() {
 				usage := "regulator observe remote [TARGET] [FLAGS]"
 				description := "Run observation on a target"
 				cli.ShouldHaveArgs(3, usage, description, remote_flag_set)
@@ -74,8 +78,10 @@ func main() {
 				)
 			},
 		},
-		{"react", "local",
-			func() {
+		{
+			Verb: "react",
+			Noun: "local",
+			ExecutionFn: func() {
 				usage := "regulator react local [FLAGS]"
 				description := "React to an observation on the local system"
 				cli.ShouldHaveArgs(2, usage, description, local_flag_set)
@@ -91,8 +97,10 @@ func main() {
 				)
 			},
 		},
-		{"react", "remote",
-			func() {
+		{
+			Verb: "react",
+			Noun: "remote",
+			ExecutionFn: func() {
 				usage := "regulator react remote [TARGET] [FLAGS]"
 				description := "React to an observation on a target"
 				cli.ShouldHaveArgs(3, usage, description, remote_flag_set)
@@ -108,8 +116,10 @@ func main() {
 				)
 			},
 		},
-		{"run", "local",
-			func() {
+		{
+			Verb: "run",
+			Noun: "local",
+			ExecutionFn: func() {
 				usage := "regulator run local [ACTION NAME] [FLAGS]"
 				description := "Run an action on the local system"
 				cli.ShouldHaveArgs(3, usage, description, local_flag_set)
@@ -125,8 +135,10 @@ func main() {
 				)
 			},
 		},
-		{"run", "remote",
-			func() {
+		{
+			Verb: "run",
+			Noun: "remote",
+			ExecutionFn: func() {
 				usage := "regulator run remote [ACTION NAME] [TARGET] [FLAGS]"
 				description := "Run actions on a target"
 				cli.ShouldHaveArgs(4, usage, description, remote_flag_set)
@@ -142,8 +154,10 @@ func main() {
 				)
 			},
 		},
-		{"setup", "remote",
-			func() {
+		{
+			Verb: "setup",
+			Noun: "remote",
+			ExecutionFn: func() {
 				usage := "regulator setup remote [TARGET] [FLAGS]"
 				description := "Run actions on a target"
 				cli.ShouldHaveArgs(3, usage, description, setup_flag_set)
