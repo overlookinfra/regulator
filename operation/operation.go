@@ -108,13 +108,7 @@ func (actn Action) HashKeys() []string {
 }
 
 func (actn Action) Empty() bool {
-	if actn.Path == "" && actn.Script == "" {
-		return true
-	}
-	if actn.Exe == "" {
-		return true
-	}
-	return false
+	return actn.Exe == ""
 }
 
 // ---------------------------------------------------------------
@@ -266,9 +260,6 @@ func (impl Implement) HashKeys() []string {
 // both reacting and observing (I'm pretty
 // sure they are useless without that)
 func (impl Implement) Empty() bool {
-	if impl.Path == "" && impl.Script == "" {
-		return true
-	}
 	if impl.Exe == "" {
 		return true
 	}
