@@ -18,7 +18,9 @@ build-implements:
 		cd $$DIR && \
 		make build && \
 		cd ..; \
-	done
+	done && \
+	cd .. && \
+	git checkout -- implements/**/go.mod
 
 build: build-regulator build-implements
 
