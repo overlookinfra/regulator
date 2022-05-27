@@ -182,9 +182,10 @@ func SelectObservationResult(obsv_name string, obsv_results map[string]operation
 func SelectImplementActionByName(impl_name string, impls map[string]operation.Implement) *operation.Action {
 	if selected_impl, found := impls[impl_name]; found {
 		return &operation.Action{
-			Path: selected_impl.Path,
-			Exe:  selected_impl.Exe,
-			Args: selected_impl.Reacts.Args,
+			Path:   selected_impl.Path,
+			Script: selected_impl.Script,
+			Exe:    selected_impl.Exe,
+			Args:   selected_impl.Reacts.Args,
 		}
 	}
 	return nil
@@ -198,9 +199,10 @@ func SelectImplementActionForCorrection(obsv operation.Observation, obsv_result 
 			for _, state := range impl.Reacts.Corrects.Starts_From {
 				if state == obsv_result.Result {
 					return impl_name, &operation.Action{
-						Path: impl.Path,
-						Exe:  impl.Exe,
-						Args: impl.Reacts.Args,
+						Path:   impl.Path,
+						Script: impl.Script,
+						Exe:    impl.Exe,
+						Args:   impl.Reacts.Args,
 					}
 				}
 			}
