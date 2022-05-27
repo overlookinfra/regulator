@@ -6,11 +6,14 @@ GO_BIN_NAME=gcloud_compute_impl
 setup:
 	mkdir -p ../../output
 	rm -rf ../../output/$(GO_BIN_NAME)
+	rm -rf ../../output/$(GO_BIN_NAME).yaml
 
-# Actually build the thing
+# Actually build the thing, including copying the impl
+# data definition to the output dir
 build: setup
 	go mod tidy
 	go build -o ../../output/ $(GO_MODULE_NAME)
+	cp $(GO_BIN_NAME).yaml ../../output/
 
 install:
 	go mod tidy

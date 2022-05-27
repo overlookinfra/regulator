@@ -1,6 +1,6 @@
 GO_PACKAGES=. ./connection ./local ./localexec ./localfile ./operation ./operparse ./remote ./render ./rgerror ./sanitize ./validator ./version
 GO_MODULE_NAME=github.com/puppetlabs/regulator
-GO_BIN_NAME=gcloud_compute_impl
+GO_BIN_NAME=regulator
 
 # Make the build dir, and remove any go bins already there
 setup:
@@ -8,9 +8,19 @@ setup:
 	rm -rf output/$(GO_BIN_NAME)
 
 # Actually build the thing
-build: setup
+build-regulator: setup
 	go mod tidy
 	go build -o output/ $(GO_MODULE_NAME)
+
+build-implements:
+	cd implements && \
+	for DIR in $$(ls); do \
+		cd $$DIR && \
+		make build && \
+		cd ..; \
+	done
+
+build: build-regulator build-implements
 
 install:
 	go mod tidy
